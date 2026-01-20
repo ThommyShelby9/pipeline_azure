@@ -1,0 +1,29 @@
+parameters:
+  nodeVersion: '20.x'
+  webClientPath: ''
+  webBuildOutput: 'dist'
+
+jobs:
+  - job: BuildFrontend
+    displayName: 'Build React frontend'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: NodeTool@0
+        displayName: 'Use Node.js'
+        inputs:
+          versionSpec: ${{ parameters.nodeVersion }}
+
+      - script: npm ci
+        displayName: 'Install dependencies'
+        workingDirectory: ${{ parameters.webClientPath }}
+
+      - script: npm run build
+        displayName: 'Build frontend'
+        workingDirectory: ${{ parameters.webClientPath }}
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish frontend artifact'
+        inputs:
+          targetPath: '${{ parameters.webClientPath }}/${{ parameters.webBuildOutput }}'
+          artifact: 'web-dist'

@@ -1,0 +1,37 @@
+parameters:
+  solution: ''
+  buildConfiguration: 'Release'
+  dotnetSdkVersion: '10.0.x'
+
+jobs:
+  - job: BuildDotNet
+    displayName: 'Build and Test .NET'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: ${{ parameters.dotnetSdkVersion }}
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Restore'
+        inputs:
+          command: 'restore'
+          projects: ${{ parameters.solution }}
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build'
+        inputs:
+          command: 'build'
+          projects: ${{ parameters.solution }}
+          arguments: '--configuration ${{ parameters.buildConfiguration }}'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Test'
+        inputs:
+          command: 'test'
+          projects: ${{ parameters.solution }}
+          publishTestResults: true
+          arguments: '--configuration ${{ parameters.buildConfiguration }}'

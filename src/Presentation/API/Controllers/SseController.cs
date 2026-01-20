@@ -1,0 +1,36 @@
+using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
+using ShoppingProject.Application.Common.Interfaces;
+
+namespace ShoppingProject.WebApi.Controllers;
+
+[ApiController]
+[Route("api/v{version:apiVersion}/sse")]
+[ApiVersion("1.0")]
+public class SseController : ControllerBase
+{
+    private readonly IClock _clock;
+
+    public SseController(IClock clock)
+    {
+        _clock = clock;
+    }
+
+    [HttpGet("events")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task GetEvents(CancellationToken cancellationToken)
+    {
+        Response.Headers.Append("Content-Type", "text/event-stream");
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            var message = $"Event at {_clock.UtcNow}";
+            await Response.WriteAsync($"data: {message}\n\n", cancellationToken);
+            await Response.Body.FlushAsync(cancellationToken);
+            await Task.Delay(1000, cancellationToken);
+        }
+    }
+}

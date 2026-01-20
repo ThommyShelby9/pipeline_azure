@@ -1,0 +1,59 @@
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.cs]
+# XML comment analysis
+dotnet_diagnostic.SA0001.severity = none
+
+# Local calls 'this.' prefix
+dotnet_diagnostic.SA1101.severity = suggestion
+
+# Using directives placement
+dotnet_diagnostic.SA1200.severity = warning
+
+# File header
+dotnet_diagnostic.SA1633.severity = none
+
+# Field names underscore
+dotnet_diagnostic.SA1309.severity = warning
+
+# Elements should be documented
+dotnet_diagnostic.SA1600.severity = suggestion
+
+# Elements separated by blank line
+dotnet_diagnostic.SA1516.severity = suggestion
+
+# Missing XML comment
+dotnet_diagnostic.CS1591.severity = none
+
+# Enum items documented
+dotnet_diagnostic.SA1602.severity = suggestion
+
+# Ordering rules
+dotnet_diagnostic.SA1201.severity = warning
+dotnet_diagnostic.SA1202.severity = warning
+dotnet_diagnostic.SA1214.severity = warning
+
+# Method overloads adjacent
+dotnet_diagnostic.S4136.severity = suggestion
+
+# Dispose members
+dotnet_diagnostic.S2930.severity = warning
+
+# Private classes sealed
+dotnet_diagnostic.S3260.severity = suggestion
+
+# Operator spacing
+dotnet_diagnostic.SA1003.severity = warning
+
+# Collection specific Exists check
+dotnet_diagnostic.S6605.severity = suggestion
+
+# IEquatable<T> sealed (ValueObject istisna)
+dotnet_diagnostic.S4035.severity = none

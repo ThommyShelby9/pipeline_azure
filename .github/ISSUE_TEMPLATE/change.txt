@@ -1,0 +1,307 @@
+📂 IdentityService.cs İyileştirmeleri
+1. Refresh Token Rotation & Revocation
+Eksik: Refresh token rotation var ama revocation list yok.
+
+Fix: Kullanıcıya birden fazla refresh token verilmemeli, aktif refresh token tablosu veya alanı kullanılmalı.
+
+diff
+- user.RefreshToken = newRefreshToken;
+- await _userManager.UpdateAsync(user);
++ user.RefreshToken = newRefreshToken;
++ user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
++ // TODO: Add refresh token revocation list (invalidate old tokens)
++ await _userManager.UpdateAsync(user);
+2. Claims Genişletme
+Eksik: Sadece NameIdentifier, Name, Email, Role claim’leri var.
+
+Fix: CorrelationId, TenantId gibi işlevsel claim eklenebilir.
+
+diff
+ var claims = new List<Claim>
+ {
+     new Claim(ClaimTypes.NameIdentifier, user.Id),
+     new Claim(ClaimTypes.Name, user.UserName!),
+     new Claim(ClaimTypes.Email, user.Email!),
++    new Claim("CorrelationId", Guid.NewGuid().ToString()),
++    new Claim("TenantId", user.TenantId ?? string.Empty)
+ };
+3. GetPrincipalFromExpiredToken
+Eksik: ValidateLifetime = false doğru ama sadece refresh flow için kullanılmalı.
+
+Fix: Normal API çağrılarında ValidateLifetime = true.
+
+
+diff
+- user.RefreshToken = newRefreshToken;
+- await _userManager.UpdateAsync(user);
++ user.RefreshToken = newRefreshToken;
++ user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenExpiryDays);
++ await _userManager.UpdateAsync(user);
+5. Logging
+Eksik: Login ve refresh hataları loglanmıyor.
+
+Fix: _logger.LogWarning("Invalid login attempt for {Email}", email); _logger.LogWarning("Invalid refresh token for user {UserId}", userId);
+
+6. Security Improvements
+Eksik: Refresh token Base64 string, ama DB’de plaintext tutuluyor.
+
+Fix: Hash’lenmiş refresh token saklanmalı (örn. SHA256).
+
+diff
+- user.RefreshToken = refreshToken;
++ user.RefreshToken = HashRefreshToken(refreshToken);
+csharp
+private string HashRefreshToken(string refreshToken)
+{
+    using var sha256 = SHA256.Create();
+    var bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(refreshToken));
+    return Convert.ToBase64String(bytes);
+}
+🎯 Özet
+Bu dosyada yapılacak düzeltmeler:
+
+Refresh token rotation + revocation list ekle.
+
+Claims genişlet (CorrelationId, TenantId).
+
+Refresh sırasında expiry yeniden set et.
+
+Login/refresh hatalarını logla.
+
+Refresh token DB’de hash’lenmiş olarak sakla.
+
+------------------------------
+
+📂 OutboxProcessorService.cs İyileştirmeleri
+1. Retry & Dead-letter Queue
+Eksik: Başarısız mesajlar sadece MarkAsFailed ile işaretleniyor, retry sayısı veya DLQ yok.
+
+Fix: RetryCount alanı artırılmalı, belirli sayıyı aşınca DLQ’ya taşınmalı.
+
+diff
+- message.MarkAsFailed(ex.Message);
++ message.RetryCount++;
++ if (message.RetryCount >= 5)
++ {
++     message.MarkAsDeadLetter(ex.Message);
++     _logger.LogError("Message {Id} moved to DeadLetter after {RetryCount} retries", message.Id, message.RetryCount);
++ }
++ else
++ {
++     message.MarkAsFailed(ex.Message);
++ }
+2. Idempotency
+Eksik: Aynı mesaj birden fazla kez publish edilebilir.
+
+Fix: MessageId veya hash ile idempotency kontrolü eklenmeli.
+
+csharp
+await messageBus.PublishAsync(@event, cancellationToken, message.Id);
+3. Batch Transaction
+Eksik: Her mesaj sonrası SaveChangesAsync çağrılıyor.
+
+Fix: Tüm batch işlendikten sonra tek SaveChangesAsync.
+
+diff
+- foreach (var message in unprocessedMessages)
+- {
+-     ...
+-     await context.SaveChangesAsync(cancellationToken);
+- }
++ foreach (var message in unprocessedMessages)
++ {
++     ...
++ }
++ await context.SaveChangesAsync(cancellationToken);
+4. Structured Logging
+Eksik: Loglar sadece string.
+
+Fix: CorrelationId ve event type loglara eklenmeli.
+
+csharp
+_logger.LogInformation("Processed outbox message {Id} of type {Type} with CorrelationId {CorrelationId}",
+    message.Id, message.Type, message.CorrelationId);
+5. Serialization Safety
+Eksik: JsonSerializer.Deserialize exception fırlatabilir.
+
+Fix: JsonSerializerOptions ile güvenli deserialization.
+
+csharp
+var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+var @event = JsonSerializer.Deserialize(message.Content, eventType, options);
+6. CancellationToken Respect
+Eksik: Döngü içinde publish sırasında cancellation token tam kullanılmıyor.
+
+Fix: PublishAsync ve EF Core sorgularında cancellation token zorunlu geçirilmeli (sen zaten geçiriyorsun ama consistency için her yerde).
+
+🎯 Özet
+Bu dosyada yapılacak düzeltmeler:
+
+RetryCount + Dead-letter queue ekle.
+
+Idempotency kontrolü (MessageId ile).
+
+Batch sonrası tek SaveChangesAsync.
+
+Structured logging (CorrelationId, EventType).
+
+Güvenli JsonSerializerOptions.
+
+CancellationToken her yerde tutarlı kullan.
+
++---------------------------
+📂 NotificationHub.cs İyileştirmeleri
+1. Claim Extraction Tekrarlılığı
+Eksik: userId ve roles çıkarımı her metotta tekrar yazılmış.
+
+Fix: Tek bir yardımcı private method ile konsolide et.
+
+csharp
+private string? GetUserId()
+{
+    return Context.User?.FindFirst("sub")?.Value
+        ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        ?? Context.User?.Identity?.Name;
+}
+
+private List<string> GetUserRoles()
+{
+    return Context.User?.Claims
+        .Where(c => c.Type == ClaimTypes.Role)
+        .Select(c => c.Value)
+        .ToList() ?? new List<string>();
+}
+Sonra OnConnectedAsync, OnDisconnectedAsync, SendTestNotification, RegisterPushToken içinde tekrar eden kod kaldırılır.
+
+2. Group Naming Consistency
+Eksik: Role grupları role.ToLower() ile ekleniyor, ama prefix yok.
+
+Fix: Daha güvenli ve tutarlı isimlendirme:
+
+diff
+- await Groups.AddToGroupAsync(Context.ConnectionId, role.ToLower());
++ await Groups.AddToGroupAsync(Context.ConnectionId, $"role_{role.ToLower()}");
+3. Push Token Storage
+Eksik: Token sadece loglanıyor, DB/cache’e kaydedilmiyor.
+
+Fix: Token’ı IPushTokenRepository gibi bir servis aracılığıyla kaydet.
+
+csharp
+await _pushTokenRepository.SaveAsync(userId, token, platform);
+4. Structured Logging
+Eksik: Loglarda correlation-id yok.
+
+Fix: Context.ConnectionId veya HttpContext.TraceIdentifier loglara eklenmeli.
+
+csharp
+_logger.LogInformation("User {UserId} connected with ConnectionId {ConnectionId}, Roles: {Roles}",
+    userId, Context.ConnectionId, string.Join(", ", roles));
+5. Error Handling
+Eksik: RegisterPushToken ve SendTestNotification hata durumlarını ele almıyor.
+
+Fix: Try/catch eklenmeli, ProblemDetails benzeri response döndürülmeli.
+
+csharp
+try
+{
+    await Clients.Caller.SendAsync("TokenRegistered", new { Success = true });
+}
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Error registering push token for {UserId}", userId);
+    await Clients.Caller.SendAsync("TokenRegistered", new { Success = false, Message = ex.Message });
+}
+6. Authorization Granularity
+Eksik: [Authorize] attribute global, ama bazı methodlar (ör. SendTestNotification) sadece admin/test amaçlı olabilir.
+
+Fix: Method bazlı [Authorize(Roles = "Administrator")] eklenmeli.
+
+🎯 Özet
+Bu dosyada yapılacak düzeltmeler:
+
+Claim extraction helper method ile tekrar eden kod temizlenmeli.
+
+Role group isimlendirmesi role_ prefix ile tutarlı hale getirilmeli.
+
+Push token DB/cache’e kaydedilmeli.
+
+Structured logging (ConnectionId, CorrelationId) eklenmeli.
+
+Error handling try/catch ile güçlendirilmeli.
+
+Method bazlı authorization eklenmeli.
+
+--------------
+
+📂 OrderHub.cs İyileştirmeleri
+1. Claim Extraction Tekrarlılığı
+Eksik: userId çıkarımı her metotta tekrar yazılmış.
+
+Fix: Tek bir yardımcı private method ile konsolide et.
+
+csharp
+private string? GetUserId()
+{
+    return Context.User?.FindFirst("sub")?.Value
+        ?? Context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        ?? Context.User?.Identity?.Name;
+}
+Sonra OnConnectedAsync, OnDisconnectedAsync, RequestOrderStatus içinde tekrar eden kod kaldırılır.
+
+2. Group Naming Consistency
+Eksik: Admin grubu "admins" olarak ekleniyor, ama diğer hub’larda role_ prefix kullanılması daha tutarlı olur.
+
+Fix:
+
+diff
+- await Groups.AddToGroupAsync(Context.ConnectionId, "admins");
++ await Groups.AddToGroupAsync(Context.ConnectionId, "role_admins");
+3. Structured Logging
+Eksik: Loglarda sadece userId var.
+
+Fix: ConnectionId ve correlation-id eklenmeli.
+
+csharp
+_logger.LogInformation("User {UserId} connected to OrderHub with ConnectionId {ConnectionId}",
+    userId, Context.ConnectionId);
+4. Error Handling
+Eksik: RequestOrderStatus hata durumlarını ele almıyor.
+
+Fix: Try/catch eklenmeli.
+
+csharp
+try
+{
+    await Clients.Caller.SendAsync("OrderStatusRequested",
+        new { OrderId = orderId, Timestamp = DateTime.UtcNow });
+}
+catch (Exception ex)
+{
+    _logger.LogError(ex, "Error sending order status to {UserId}", userId);
+    await Clients.Caller.SendAsync("OrderStatusRequested",
+        new { Success = false, Message = ex.Message });
+}
+5. Authorization Granularity
+Eksik: [Authorize] global attribute var, ama bazı methodlar (örn. RequestOrderStatus) sadece belirli role sahip kullanıcılar için olmalı.
+
+Fix: Method bazlı [Authorize(Roles = "Client,Admin")] eklenmeli.
+
+6. Scalability
+Eksik: Hub grupları memory’de tutuluyor, distributed scale-out için Redis backplane eklenmeli.
+
+Fix: Startup’da services.AddSignalR().AddStackExchangeRedis("connection-string");.
+
+🎯 Özet
+Bu dosyada yapılacak düzeltmeler:
+
+Claim extraction helper method ile tekrar eden kod temizlenmeli.
+
+Admin group isimlendirmesi role_admins prefix ile tutarlı hale getirilmeli.
+
+Structured logging (ConnectionId, CorrelationId) eklenmeli.
+
+Error handling try/catch ile güçlendirilmeli.
+
+Method bazlı authorization eklenmeli.
+
+Redis backplane ile scale-out desteklenmeli.

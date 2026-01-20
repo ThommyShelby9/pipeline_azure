@@ -1,0 +1,6 @@
+﻿global using ShoppingProject.Domain.Common;
+global using ShoppingProject.Domain.Constants;
+global using ShoppingProject.Domain.Entities;
+global using ShoppingProject.Domain.Enums;
+global using ShoppingProject.Domain.Events;
+global using ShoppingProject.Domain.Exceptions;

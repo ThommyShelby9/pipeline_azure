@@ -1,0 +1,28 @@
+parameters:
+  azureServiceConnection: ''
+  resourceGroup: ''
+  location: ''
+  bicepFile: ''
+  environmentName: ''
+
+jobs:
+  - job: DeployInfra
+    displayName: 'Deploy IaC (Bicep)'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: AzureCLI@2
+        displayName: 'Deploy Bicep'
+        inputs:
+          azureSubscription: ${{ parameters.azureServiceConnection }}
+          scriptType: 'bash'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            az deployment sub create \
+              --location '${{ parameters.location }}' \
+              --template-file '${{ parameters.bicepFile }}' \
+              --parameters environmentName='${{ parameters.environmentName }}' \
+              --parameters resourceGroupName='${{ parameters.resourceGroup }}' \
+              --parameters principalId='$(principalId)' \
+              --parameters dbAdminPassword='$(dbAdminPassword)' \
+              --parameters dbAppUserPassword='$(dbAppUserPassword)'

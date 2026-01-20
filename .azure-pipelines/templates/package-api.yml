@@ -1,0 +1,47 @@
+parameters:
+  dotnetSdkVersion: '10.0.x'
+  buildConfiguration: 'Release'
+  apiProject: ''
+  webBuildOutput: 'dist'
+  webClientPath: ''
+  artifactName: 'drop'
+
+jobs:
+  - job: PackageApi
+    displayName: 'Package API with React assets'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - checkout: self
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: ${{ parameters.dotnetSdkVersion }}
+
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download frontend build'
+        inputs:
+          artifact: 'web-dist'
+          path: '$(Pipeline.Workspace)/web-dist'
+
+      - script: |
+          rm -rf src/Presentation/API/wwwroot
+          mkdir -p src/Presentation/API/wwwroot
+          cp -R $(Pipeline.Workspace)/web-dist/* src/Presentation/API/wwwroot/
+        displayName: 'Copy React build to wwwroot'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Publish API'
+        inputs:
+          command: 'publish'
+          publishWebProjects: false
+          projects: ${{ parameters.apiProject }}
+          arguments: '--configuration ${{ parameters.buildConfiguration }} --output $(Build.ArtifactStagingDirectory)/api'
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish deployment artifact'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/api'
+          artifact: ${{ parameters.artifactName }}

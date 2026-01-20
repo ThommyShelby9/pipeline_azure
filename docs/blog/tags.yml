@@ -1,0 +1,19 @@
+clean-architecture:
+  label: Clean Architecture
+  permalink: /clean-architecture
+  description: Uygulama katmanlarının ayrılması ve bağımsız test edilebilirliğe odaklanan yazılar.
+
+dotnet:
+  label: .NET & C#
+  permalink: /dotnet
+  description: .NET Core, C# dili, Async/Await ve performans optimizasyonları ile ilgili teknik makaleler.
+
+azure-cloud:
+  label: Azure Cloud Services
+  permalink: /azure
+  description: Azure Cosmos DB, Key Vault, Functions ve Container Apps gibi bulut hizmetleri kullanımı ve uygulamaları.
+
+nosql-modeling:
+  label: NoSQL Veri Modelleme
+  permalink: /nosql
+  description: Cosmos DB gibi NoSQL veritabanlarında partition key seçimi ve veri denormalizasyon stratejileri.

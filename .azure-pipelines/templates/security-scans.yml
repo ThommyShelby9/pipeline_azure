@@ -1,0 +1,57 @@
+parameters:
+  solution: ''
+  buildConfiguration: 'Release'
+  dotnetSdkVersion: '10.0.x'
+  sonarServiceConnection: ''
+  sonarOrganization: ''
+  sonarProjectKey: ''
+  sonarProjectName: ''
+
+jobs:
+  - job: DevSecOps
+    displayName: 'SonarCloud and Gitleaks'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET SDK'
+        inputs:
+          packageType: 'sdk'
+          version: ${{ parameters.dotnetSdkVersion }}
+
+      - task: SonarCloudPrepare@2
+        displayName: 'Prepare SonarCloud analysis'
+        inputs:
+          SonarCloud: ${{ parameters.sonarServiceConnection }}
+          organization: ${{ parameters.sonarOrganization }}
+          scannerMode: 'MSBuild'
+          projectKey: ${{ parameters.sonarProjectKey }}
+          projectName: ${{ parameters.sonarProjectName }}
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Build for analysis'
+        inputs:
+          command: 'build'
+          projects: ${{ parameters.solution }}
+          arguments: '--configuration ${{ parameters.buildConfiguration }}'
+
+      - task: SonarCloudAnalyze@2
+        displayName: 'Run SonarCloud analysis'
+
+      - task: SonarCloudPublish@2
+        displayName: 'Publish SonarCloud quality gate'
+        inputs:
+          pollingTimeoutSec: '300'
+
+      - script: |
+          set -euo pipefail
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.1/gitleaks_8.21.1_linux_x64.tar.gz -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks detect --source . --report-format sarif --report-path $(Build.ArtifactStagingDirectory)/gitleaks.sarif
+        displayName: 'Gitleaks scan'
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish gitleaks report'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/gitleaks.sarif'
+          artifact: 'gitleaks-report'

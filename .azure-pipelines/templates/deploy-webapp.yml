@@ -1,0 +1,79 @@
+parameters:
+  environmentName: ''
+  azureServiceConnection: ''
+  keyVaultName: ''
+  webAppName: ''
+  deployToSlot: false
+  slotName: ''
+  artifactName: 'drop'
+
+jobs:
+  - deployment: DeployWebApp
+    displayName: 'Deploy App Service'
+    environment: ${{ parameters.environmentName }}
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - download: current
+              artifact: ${{ parameters.artifactName }}
+
+            - task: AzureKeyVault@2
+              displayName: 'Fetch secrets from Key Vault'
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                KeyVaultName: ${{ parameters.keyVaultName }}
+                SecretsFilter: >
+                  ConnectionStrings--DefaultConnection,
+                  ConnectionStrings--DefaultConnection_ReadOnly,
+                  ConnectionStrings--AuditConnection,
+                  ConnectionStrings--RedisConnection,
+                  ConnectionStrings--RabbitMqConnection,
+                  JwtSettings--Secret,
+                  Authentication--ApiKey,
+                  ServiceBusOption--Url,
+                  Hangfire--ConnectionString,
+                  Email--SmtpUser,
+                  Email--SmtpPass
+
+            - pwsh: |
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection;issecret=true]$(ConnectionStrings--DefaultConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection_ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection_ReadOnly)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings.AuditConnection;issecret=true]$(ConnectionStrings--AuditConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings.RedisConnection;issecret=true]$(ConnectionStrings--RedisConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings.RabbitMqConnection;issecret=true]$(ConnectionStrings--RabbitMqConnection)"
+                Write-Host "##vso[task.setvariable variable=JwtSettings.Secret;issecret=true]$(JwtSettings--Secret)"
+                Write-Host "##vso[task.setvariable variable=Authentication.ApiKey;issecret=true]$(Authentication--ApiKey)"
+                Write-Host "##vso[task.setvariable variable=ServiceBusOption.Url;issecret=true]$(ServiceBusOption--Url)"
+                Write-Host "##vso[task.setvariable variable=Hangfire.ConnectionString;issecret=true]$(Hangfire--ConnectionString)"
+                Write-Host "##vso[task.setvariable variable=Email.SmtpUser;issecret=true]$(Email--SmtpUser)"
+                Write-Host "##vso[task.setvariable variable=Email.SmtpPass;issecret=true]$(Email--SmtpPass)"
+              displayName: 'Map Key Vault secrets for JSON transform'
+
+            - task: FileTransform@2
+              displayName: 'JSON variable substitution'
+              inputs:
+                folderPath: '$(Pipeline.Workspace)/${{ parameters.artifactName }}'
+                fileType: 'json'
+                jsonTargetFiles: '**/appsettings.json'
+
+            - task: ArchiveFiles@2
+              displayName: 'Archive deployment package'
+              inputs:
+                rootFolderOrFile: '$(Pipeline.Workspace)/${{ parameters.artifactName }}'
+                includeRootFolder: false
+                archiveType: 'zip'
+                archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+                replaceExistingArchive: true
+
+            - task: AzureWebApp@1
+              displayName: 'Deploy to App Service'
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                appType: 'webAppLinux'
+                appName: ${{ parameters.webAppName }}
+                deployToSlotOrASE: ${{ parameters.deployToSlot }}
+                slotName: ${{ parameters.slotName }}
+                package: '$(Build.ArtifactStagingDirectory)/app.zip'
