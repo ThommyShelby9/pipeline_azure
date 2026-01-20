@@ -2,6 +2,8 @@ parameters:
   nodeVersion: '20.x'
   webClientPath: ''
   webBuildOutput: 'dist'
+  runTests: true
+  runLint: true
 
 jobs:
   - job: BuildFrontend
@@ -18,6 +20,39 @@ jobs:
         displayName: 'Install dependencies'
         workingDirectory: ${{ parameters.webClientPath }}
 
+      # ESLint - Code quality gate
+      - ${{ if eq(parameters.runLint, true) }}:
+        - script: npm run lint
+          displayName: 'Run ESLint'
+          workingDirectory: ${{ parameters.webClientPath }}
+
+      # TypeScript type checking
+      - script: npm run type-check
+        displayName: 'TypeScript type check'
+        workingDirectory: ${{ parameters.webClientPath }}
+
+      # Unit tests with coverage
+      - ${{ if eq(parameters.runTests, true) }}:
+        - script: npm run test -- --reporter=junit --outputFile=test-results.xml --run
+          displayName: 'Run unit tests'
+          workingDirectory: ${{ parameters.webClientPath }}
+          continueOnError: false
+
+        - task: PublishTestResults@2
+          displayName: 'Publish test results'
+          condition: always()
+          inputs:
+            testResultsFormat: 'JUnit'
+            testResultsFiles: '${{ parameters.webClientPath }}/test-results.xml'
+            testRunTitle: 'Frontend Unit Tests'
+            failTaskOnFailedTests: true
+
+        - script: npm run test:coverage -- --run
+          displayName: 'Generate coverage report'
+          workingDirectory: ${{ parameters.webClientPath }}
+          continueOnError: true
+
+      # Production build
       - script: npm run build
         displayName: 'Build frontend'
         workingDirectory: ${{ parameters.webClientPath }}

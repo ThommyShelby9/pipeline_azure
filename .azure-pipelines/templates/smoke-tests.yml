@@ -1,0 +1,81 @@
+parameters:
+  baseUrl: ''
+  environmentName: ''
+
+jobs:
+  - job: SmokeTests
+    displayName: 'Post-deployment smoke tests'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - script: |
+          echo "========================================"
+          echo "Running smoke tests against ${{ parameters.baseUrl }}"
+          echo "Environment: ${{ parameters.environmentName }}"
+          echo "========================================"
+
+          FAILED=0
+
+          # Test 1: Health endpoint
+          echo ""
+          echo "Test 1: Health endpoint (/health)"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/health" --max-time 30)
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "  [FAIL] Health endpoint returned HTTP $HTTP_STATUS"
+            FAILED=1
+          else
+            echo "  [PASS] Health endpoint returned HTTP 200"
+          fi
+
+          # Test 2: API Swagger endpoint (may be disabled in production)
+          echo ""
+          echo "Test 2: API availability (/swagger)"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/swagger/index.html" --max-time 30)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "  [PASS] Swagger UI available (HTTP 200)"
+          else
+            echo "  [INFO] Swagger UI not available (HTTP $HTTP_STATUS) - may be disabled in production"
+          fi
+
+          # Test 3: Static files (React app - index.html)
+          echo ""
+          echo "Test 3: Static files (index.html)"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/" --max-time 30)
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "  [FAIL] Static files not served correctly (HTTP $HTTP_STATUS)"
+            FAILED=1
+          else
+            echo "  [PASS] Static files served correctly (HTTP 200)"
+          fi
+
+          # Test 4: Check for React app root element
+          echo ""
+          echo "Test 4: React app loaded (checking for 'root' element)"
+          CONTENT=$(curl -s "${{ parameters.baseUrl }}/" --max-time 30)
+          if ! echo "$CONTENT" | grep -q "root"; then
+            echo "  [FAIL] React app root element not found in response"
+            FAILED=1
+          else
+            echo "  [PASS] React app root element found"
+          fi
+
+          # Test 5: Health-UI endpoint
+          echo ""
+          echo "Test 5: Health UI endpoint (/health-ui)"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/health-ui" --max-time 30)
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "  [PASS] Health UI available (HTTP 200)"
+          else
+            echo "  [INFO] Health UI returned HTTP $HTTP_STATUS"
+          fi
+
+          echo ""
+          echo "========================================"
+          if [ $FAILED -eq 0 ]; then
+            echo "All critical smoke tests passed!"
+            exit 0
+          else
+            echo "Some smoke tests failed!"
+            exit 1
+          fi
+        displayName: 'Run smoke tests'

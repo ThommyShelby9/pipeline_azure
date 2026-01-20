@@ -26,12 +26,22 @@ jobs:
         inputs:
           command: 'build'
           projects: ${{ parameters.solution }}
-          arguments: '--configuration ${{ parameters.buildConfiguration }}'
+          arguments: '--configuration ${{ parameters.buildConfiguration }} --no-restore'
 
       - task: DotNetCoreCLI@2
-        displayName: 'Test'
+        displayName: 'Test with coverage'
         inputs:
           command: 'test'
-          projects: ${{ parameters.solution }}
+          projects: '**/*Tests.csproj'
           publishTestResults: true
-          arguments: '--configuration ${{ parameters.buildConfiguration }}'
+          arguments: >
+            --configuration ${{ parameters.buildConfiguration }}
+            --no-build
+            --collect:"XPlat Code Coverage"
+            --results-directory $(Build.SourcesDirectory)/TestResults
+
+      - task: PublishCodeCoverageResults@2
+        displayName: 'Publish code coverage'
+        inputs:
+          summaryFileLocation: '$(Build.SourcesDirectory)/TestResults/**/coverage.cobertura.xml'
+          failIfCoverageEmpty: false

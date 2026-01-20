@@ -6,6 +6,9 @@ parameters:
   sonarOrganization: ''
   sonarProjectKey: ''
   sonarProjectName: ''
+  # Parameters for npm audit
+  nodeVersion: '20.x'
+  webClientPath: ''
 
 jobs:
   - job: DevSecOps
@@ -55,3 +58,44 @@ jobs:
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)/gitleaks.sarif'
           artifact: 'gitleaks-report'
+
+  # NPM Audit job for dependency vulnerability scanning
+  - job: NpmAudit
+    displayName: 'NPM Dependency Audit'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+      - task: NodeTool@0
+        displayName: 'Use Node.js'
+        inputs:
+          versionSpec: ${{ parameters.nodeVersion }}
+
+      - script: npm ci
+        displayName: 'Install dependencies'
+        workingDirectory: ${{ parameters.webClientPath }}
+
+      - script: |
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate --json > $(Build.ArtifactStagingDirectory)/npm-audit.json || true
+
+          # Run audit and capture exit code
+          npm audit --audit-level=moderate
+          AUDIT_EXIT_CODE=$?
+
+          if [ $AUDIT_EXIT_CODE -gt 0 ]; then
+            echo "##vso[task.logissue type=warning]npm audit found vulnerabilities (exit code: $AUDIT_EXIT_CODE)"
+          else
+            echo "No vulnerabilities found"
+          fi
+
+          # Don't fail the pipeline on vulnerabilities, just warn
+          exit 0
+        displayName: 'Run npm audit'
+        workingDirectory: ${{ parameters.webClientPath }}
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish npm audit report'
+        condition: always()
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/npm-audit.json'
+          artifact: 'npm-audit-report'

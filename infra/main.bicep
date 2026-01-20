@@ -123,6 +123,16 @@ module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
   scope: rg
 }
 
+// Key Vault access for staging slot
+module stagingSlotKeyVaultAccess 'core/security/keyvault-access.bicep' = {
+  name: 'stagingSlotKeyVaultAccess'
+  params: {
+    keyVaultName: keyVault.outputs.name
+    principalId: web.outputs.stagingSlotIdentityPrincipalId
+  }
+  scope: rg
+}
+
 // Add outputs from the deployment here, if needed.
 //
 // This allows the outputs to be referenced by other bicep deployments in the deployment pipeline,
@@ -138,3 +148,4 @@ output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output AZURE_SQL_CONNECTION_STRING_KEY string = database.outputs.connectionStringKey
 output WEB_BASE_URI string = web.outputs.uri
+output WEB_STAGING_URI string = web.outputs.stagingSlotUri

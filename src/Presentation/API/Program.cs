@@ -120,6 +120,10 @@ app.UseIpRateLimiting();
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
+
+// Serve static files from wwwroot (React frontend)
+app.UseStaticFiles();
+
 app.UseSerilogRequestLogging();
 app.UseCors(AppConstants.CorsPolicies.AllowReactApp);
 app.UseAuthentication();
@@ -144,4 +148,8 @@ app.UseWebSockets();
 app.UseMiddleware<WebSocketEchoMiddleware>();
 
 app.MapHub<ShoppingProject.Infrastructure.Hubs.NotificationHub>("/hubs/notifications");
+
+// Fallback to index.html for SPA routing (React Router)
+app.MapFallbackToFile("index.html");
+
 await app.RunAsync();

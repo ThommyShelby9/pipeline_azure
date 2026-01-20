@@ -1,0 +1,89 @@
+parameters:
+  azureServiceConnection: ''
+  resourceGroup: ''
+  webAppName: ''
+  sourceSlot: 'staging'
+  targetSlot: 'production'
+  environmentName: ''
+
+jobs:
+  - deployment: SlotSwap
+    displayName: 'Swap deployment slots'
+    environment: ${{ parameters.environmentName }}
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            # Pre-swap health check on staging slot
+            - task: AzureCLI@2
+              displayName: 'Verify staging slot health'
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                scriptType: 'bash'
+                scriptLocation: 'inlineScript'
+                inlineScript: |
+                  echo "Checking staging slot health..."
+                  SLOT_URL="https://${{ parameters.webAppName }}-${{ parameters.sourceSlot }}.azurewebsites.net/health"
+
+                  MAX_RETRIES=5
+                  RETRY_COUNT=0
+
+                  while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+                    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SLOT_URL" --max-time 30)
+
+                    if [ "$HTTP_STATUS" = "200" ]; then
+                      echo "Staging slot is healthy (HTTP $HTTP_STATUS)"
+                      exit 0
+                    fi
+
+                    RETRY_COUNT=$((RETRY_COUNT + 1))
+                    echo "Health check attempt $RETRY_COUNT failed (HTTP $HTTP_STATUS). Retrying in 10s..."
+                    sleep 10
+                  done
+
+                  echo "##vso[task.logissue type=error]Staging slot health check failed after $MAX_RETRIES attempts"
+                  exit 1
+
+            # Perform slot swap
+            - task: AzureAppServiceManage@0
+              displayName: 'Swap staging to production'
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                Action: 'Swap Slots'
+                WebAppName: ${{ parameters.webAppName }}
+                ResourceGroupName: ${{ parameters.resourceGroup }}
+                SourceSlot: ${{ parameters.sourceSlot }}
+                SwapWithProduction: true
+                PreserveVnet: true
+
+            # Post-swap health check on production
+            - task: AzureCLI@2
+              displayName: 'Verify production health post-swap'
+              inputs:
+                azureSubscription: ${{ parameters.azureServiceConnection }}
+                scriptType: 'bash'
+                scriptLocation: 'inlineScript'
+                inlineScript: |
+                  echo "Verifying production health after swap..."
+                  PROD_URL="https://${{ parameters.webAppName }}.azurewebsites.net/health"
+
+                  MAX_RETRIES=5
+                  RETRY_COUNT=0
+
+                  while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+                    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL" --max-time 30)
+
+                    if [ "$HTTP_STATUS" = "200" ]; then
+                      echo "Production is healthy (HTTP $HTTP_STATUS)"
+                      exit 0
+                    fi
+
+                    RETRY_COUNT=$((RETRY_COUNT + 1))
+                    echo "Health check attempt $RETRY_COUNT failed (HTTP $HTTP_STATUS). Retrying in 10s..."
+                    sleep 10
+                  done
+
+                  echo "##vso[task.logissue type=error]Production health check failed after swap - consider rollback"
+                  exit 1

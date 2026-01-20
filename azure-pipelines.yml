@@ -21,11 +21,13 @@ variables:
   artifactName: 'drop'
   runIaC: 'false'
 
+  # SonarCloud configuration
   sonarServiceConnection: 'SonarCloud'
   sonarOrganization: 'securefintech'
   sonarProjectKey: 'securefintech-shoppingproject'
   sonarProjectName: 'ShoppingProject'
 
+  # Azure configuration
   azureServiceConnection: 'AzureServiceConnection'
   resourceGroup: 'rg-securefintech'
   location: 'westeurope'
@@ -34,6 +36,9 @@ variables:
   slotName: 'staging'
 
 stages:
+  # ===========================================
+  # Stage 1: Infrastructure (IaC) - US-01
+  # ===========================================
   - stage: Infrastructure
     displayName: 'Infrastructure (IaC)'
     condition: and(succeeded(), eq(variables['runIaC'], 'true'))
@@ -46,6 +51,9 @@ stages:
           bicepFile: infra/main.bicep
           environmentName: 'securefintech'
 
+  # ===========================================
+  # Stage 2: Build .NET - US-02
+  # ===========================================
   - stage: Build
     displayName: 'Build (.NET)'
     jobs:
@@ -55,6 +63,9 @@ stages:
           buildConfiguration: $(buildConfiguration)
           dotnetSdkVersion: $(dotnetSdkVersion)
 
+  # ===========================================
+  # Stage 3: Build React (with lint, tests) - US-02
+  # ===========================================
   - stage: Frontend
     displayName: 'Build (React)'
     jobs:
@@ -63,9 +74,14 @@ stages:
           nodeVersion: $(nodeVersion)
           webClientPath: $(webClientPath)
           webBuildOutput: $(webBuildOutput)
+          runTests: true
+          runLint: true
 
+  # ===========================================
+  # Stage 4: DevSecOps (SonarCloud + Gitleaks + npm audit) - US-03
+  # ===========================================
   - stage: DevSecOps
-    displayName: 'DevSecOps (SonarCloud + Gitleaks)'
+    displayName: 'DevSecOps (SonarCloud + Gitleaks + npm audit)'
     dependsOn:
       - Build
     jobs:
@@ -78,7 +94,12 @@ stages:
           sonarOrganization: $(sonarOrganization)
           sonarProjectKey: $(sonarProjectKey)
           sonarProjectName: $(sonarProjectName)
+          nodeVersion: $(nodeVersion)
+          webClientPath: $(webClientPath)
 
+  # ===========================================
+  # Stage 5: Package API + React
+  # ===========================================
   - stage: Package
     displayName: 'Package (API + React)'
     dependsOn:
@@ -94,12 +115,15 @@ stages:
           webClientPath: $(webClientPath)
           artifactName: $(artifactName)
 
+  # ===========================================
+  # Stage 6: Deploy to Staging Slot - US-04
+  # ===========================================
   - stage: Deploy_Staging
     displayName: 'Deploy (Staging Slot)'
     dependsOn:
       - Package
       - DevSecOps
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
     jobs:
       - template: .azure-pipelines/templates/deploy-webapp.yml
         parameters:
@@ -111,18 +135,49 @@ stages:
           slotName: $(slotName)
           artifactName: $(artifactName)
 
-  - stage: Deploy_Production
-    displayName: 'Deploy (Production)'
+  # ===========================================
+  # Stage 7: Smoke Tests on Staging - US-04
+  # ===========================================
+  - stage: SmokeTests_Staging
+    displayName: 'Smoke Tests (Staging)'
     dependsOn:
       - Deploy_Staging
+    condition: succeeded()
+    jobs:
+      - template: .azure-pipelines/templates/smoke-tests.yml
+        parameters:
+          baseUrl: 'https://$(webAppName)-$(slotName).azurewebsites.net'
+          environmentName: 'staging'
+
+  # ===========================================
+  # Stage 8: Slot Swap (Blue-Green) - US-04
+  # Only on main branch after staging smoke tests pass
+  # ===========================================
+  - stage: SlotSwap
+    displayName: 'Slot Swap (Production)'
+    dependsOn:
+      - SmokeTests_Staging
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
-      - template: .azure-pipelines/templates/deploy-webapp.yml
+      - template: .azure-pipelines/templates/slot-swap.yml
         parameters:
-          environmentName: 'production'
           azureServiceConnection: $(azureServiceConnection)
-          keyVaultName: $(keyVaultName)
+          resourceGroup: $(resourceGroup)
           webAppName: $(webAppName)
-          deployToSlot: false
-          slotName: ''
-          artifactName: $(artifactName)
+          sourceSlot: $(slotName)
+          targetSlot: 'production'
+          environmentName: 'production'
+
+  # ===========================================
+  # Stage 9: Smoke Tests on Production - US-04
+  # ===========================================
+  - stage: SmokeTests_Production
+    displayName: 'Smoke Tests (Production)'
+    dependsOn:
+      - SlotSwap
+    condition: succeeded()
+    jobs:
+      - template: .azure-pipelines/templates/smoke-tests.yml
+        parameters:
+          baseUrl: 'https://$(webAppName).azurewebsites.net'
+          environmentName: 'production'
