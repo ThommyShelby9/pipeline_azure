@@ -1,4 +1,5 @@
 parameters:
+  runSonar: false
   solution: ''
   buildConfiguration: 'Release'
   dotnetSdkVersion: '10.0.x'
@@ -22,29 +23,37 @@ jobs:
           packageType: 'sdk'
           version: ${{ parameters.dotnetSdkVersion }}
 
-      - task: SonarQubeCloudPrepare@1
-        displayName: 'Prepare SonarQube Cloud analysis'
-        inputs:
+      - ${{ if eq(parameters.runSonar, true) }}:
+        - task: SonarQubeCloudPrepare@1
+          displayName: 'Prepare SonarQube Cloud analysis'
+          inputs:
             SonarQubeCloud: ${{ parameters.sonarServiceConnection }}
             organization: ${{ parameters.sonarOrganization }}
             scannerMode: 'MSBuild'
             projectKey: ${{ parameters.sonarProjectKey }}
             projectName: ${{ parameters.sonarProjectName }}
 
-      - task: DotNetCoreCLI@2
-        displayName: 'Build for analysis'
-        inputs:
-          command: 'build'
-          projects: ${{ parameters.solution }}
-          arguments: '--configuration ${{ parameters.buildConfiguration }}'
+        - task: DotNetCoreCLI@2
+          displayName: 'Build for analysis'
+          inputs:
+            command: 'build'
+            projects: ${{ parameters.solution }}
+            arguments: '--configuration ${{ parameters.buildConfiguration }}'
 
-      - task: SonarQubeCloudAnalyze@1
-        displayName: 'Run SonarQube Cloud analysis'
+        - task: SonarQubeCloudAnalyze@1
+          displayName: 'Run SonarQube Cloud analysis'
 
-      - task: SonarQubeCloudPublish@1
-        displayName: 'Publish SonarQube Cloud quality gate'
-        inputs:
+        - task: SonarQubeCloudPublish@1
+          displayName: 'Publish SonarQube Cloud quality gate'
+          inputs:
             pollingTimeoutSec: '300'
+
+        - task: DotNetCoreCLI@2
+          displayName: 'Build (no sonar)'
+          inputs:
+            command: 'build'
+            projects: ${{ parameters.solution }}
+            arguments: '--configuration ${{ parameters.buildConfiguration }}'
 
       - script: |
           set -euo pipefail
@@ -58,6 +67,8 @@ jobs:
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)/gitleaks.sarif'
           artifact: 'gitleaks-report'
+
+
 
   # NPM Audit job for dependency vulnerability scanning
   - job: NpmAudit

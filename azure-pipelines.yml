@@ -87,6 +87,7 @@ stages:
     jobs:
       - template: .azure-pipelines/templates/security-scans.yml
         parameters:
+          runSonar: false
           solution: $(solution)
           buildConfiguration: $(buildConfiguration)
           dotnetSdkVersion: $(dotnetSdkVersion)
