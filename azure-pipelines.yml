@@ -30,7 +30,7 @@ variables:
   # Azure configuration
   azureServiceConnection: 'azure-securefintech-oidc'
   resourceGroup: 'rg-securefintech'
-  location: 'westeurope'
+  location: 'eastus'
   keyVaultName: 'kv-securefintech'
   webAppName: 'securefintech-api'
   slotName: 'staging'
