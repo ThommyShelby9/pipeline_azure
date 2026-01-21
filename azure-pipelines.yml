@@ -19,7 +19,7 @@ variables:
   webClientPath: 'src/Presentation/Web'
   webBuildOutput: 'dist'
   artifactName: 'drop'
-  runIaC: 'false'
+  runIaC: 'true'
 
   # SonarQube configuration
   sonarServiceConnection: 'SonarQubeCloud'
