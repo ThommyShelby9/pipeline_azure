@@ -32,10 +32,10 @@ jobs:
             $dbAppUserPwd = "${{ parameters.dbAppUserPassword }}"
 
             if ([string]::IsNullOrEmpty($dbAdminPwd)) {
-              $dbAdminPwd = "Adm" + [System.Guid]::NewGuid().ToString().Substring(0,12) + "!"
+              $dbAdminPwd = "Adm1n" + [System.Guid]::NewGuid().ToString("N").Substring(0,10) + "!"
             }
             if ([string]::IsNullOrEmpty($dbAppUserPwd)) {
-              $dbAppUserPwd = "App" + [System.Guid]::NewGuid().ToString().Substring(0,12) + "!"
+              $dbAppUserPwd = "AppUs3r" + [System.Guid]::NewGuid().ToString("N").Substring(0,8) + "!"
             }
 
             az deployment sub create `
