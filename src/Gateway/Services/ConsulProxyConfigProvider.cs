@@ -110,7 +110,8 @@ public class ConsulProxyConfigProvider : IProxyConfigProvider
         }
     }
 
-    private class CustomProxyConfig : IProxyConfig, IDisposable
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("IDisposableAnalyzers.Correctness", "S3881:Fix this implementation of 'IDisposable'", Justification = "Simple disposal pattern is sufficient for this private nested class")]
+    private sealed class CustomProxyConfig : IProxyConfig, IDisposable
     {
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 

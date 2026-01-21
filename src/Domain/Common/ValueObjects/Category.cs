@@ -1,3 +1,5 @@
+using ShoppingProject.Domain.Exceptions;
+
 namespace ShoppingProject.Domain.Common.ValueObjects;
 
 public sealed class Category : ValueObject
@@ -12,7 +14,7 @@ public sealed class Category : ValueObject
     public static Category Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new DomainException("Category is invalid");
+            throw new BusinessException("Category is invalid");
 
         return new Category(value.Trim().ToLowerInvariant());
     }
