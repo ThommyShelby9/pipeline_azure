@@ -32,7 +32,7 @@ module appService '../core/host/appservice.bicep' = {
     applicationInsightsName: applicationInsightsName
     keyVaultName: keyVaultName
     runtimeName: 'dotnetcore'
-    runtimeVersion: '10.0'
+    runtimeVersion: '8.0'
     healthCheckPath: '/health'
     appSettings: {
       ASPNETCORE_ENVIRONMENT: 'Production'
@@ -52,7 +52,7 @@ module stagingSlot '../core/host/appservice-slot.bicep' = {
     applicationInsightsName: applicationInsightsName
     keyVaultName: keyVaultName
     runtimeName: 'dotnetcore'
-    runtimeVersion: '10.0'
+    runtimeVersion: '8.0'
     healthCheckPath: '/health'
     appSettings: {
       ASPNETCORE_ENVIRONMENT: 'Staging'
