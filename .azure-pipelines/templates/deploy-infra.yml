@@ -2,6 +2,7 @@ parameters:
   azureServiceConnection: ''
   resourceGroup: ''
   location: ''
+  deploymentLocation: 'westeurope'
   bicepFile: ''
   environmentName: ''
   principalId: ''
@@ -23,7 +24,7 @@ jobs:
           scriptLocation: 'inlineScript'
           inlineScript: |
             az deployment sub create `
-            --location "${{ parameters.location }}" `
+            --location "${{ parameters.deploymentLocation }}" `
             --template-file "${{ parameters.bicepFile }}" `
             --parameters environmentName="${{ parameters.environmentName }}" `
             --parameters location="${{ parameters.location }}" `
