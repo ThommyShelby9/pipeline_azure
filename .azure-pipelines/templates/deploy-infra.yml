@@ -15,14 +15,15 @@ jobs:
         displayName: 'Deploy Bicep'
         inputs:
           azureSubscription: ${{ parameters.azureServiceConnection }}
-          scriptType: 'bash'
+          scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           inlineScript: |
-            az deployment sub create \
-              --location '${{ parameters.location }}' \
-              --template-file '${{ parameters.bicepFile }}' \
-              --parameters environmentName='${{ parameters.environmentName }}' \
-              --parameters resourceGroupName='${{ parameters.resourceGroup }}' \
-              --parameters principalId='$(principalId)' \
-              --parameters dbAdminPassword='$(dbAdminPassword)' \
-              --parameters dbAppUserPassword='$(dbAppUserPassword)'
+            az deployment sub create `
+              --location "${{ parameters.location }}" `
+              --template-file "${{ parameters.bicepFile }}" `
+              --parameters environmentName="${{ parameters.environmentName }}" `
+              --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
+              --parameters principalId="$(principalId)" `
+              --parameters dbAdminPassword="$(dbAdminPassword)" `
+              --parameters dbAppUserPassword="$(dbAppUserPassword)"
+
