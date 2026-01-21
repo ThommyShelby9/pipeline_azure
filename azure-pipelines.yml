@@ -12,7 +12,7 @@ pr:
 
 variables:
   buildConfiguration: 'Release'
-  dotnetSdkVersion: '10.0.x'
+  dotnetSdkVersion: '8.0.x'
   nodeVersion: '20.x'
   solution: 'ShoppingProject.sln'
   apiProject: 'src/Presentation/API/ShoppingProject.WebApi.csproj'

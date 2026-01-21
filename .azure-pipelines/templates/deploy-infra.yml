@@ -26,6 +26,7 @@ jobs:
             --location "${{ parameters.location }}" `
             --template-file "${{ parameters.bicepFile }}" `
             --parameters environmentName="${{ parameters.environmentName }}" `
+            --parameters location="${{ parameters.location }}" `
             --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
             --parameters principalId="${{ parameters.principalId }}" `
             --parameters dbAdminPassword="${{ parameters.dbAdminPassword }}" `
