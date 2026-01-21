@@ -24,7 +24,9 @@ jobs:
           scriptLocation: 'inlineScript'
           inlineScript: |
             # Register required resource providers
+            Write-Host "=========================================="
             Write-Host "Registering Microsoft.ContainerInstance provider..."
+            Write-Host "=========================================="
             az provider register --namespace Microsoft.ContainerInstance --wait
 
             # Generate secure passwords if not provided
@@ -33,19 +35,62 @@ jobs:
 
             if ([string]::IsNullOrEmpty($dbAdminPwd)) {
               $dbAdminPwd = "Adm1n" + [System.Guid]::NewGuid().ToString("N").Substring(0,10) + "!"
+              Write-Host "Generated admin password (length: $($dbAdminPwd.Length))"
             }
             if ([string]::IsNullOrEmpty($dbAppUserPwd)) {
               $dbAppUserPwd = "AppUs3r" + [System.Guid]::NewGuid().ToString("N").Substring(0,8) + "!"
+              Write-Host "Generated app user password (length: $($dbAppUserPwd.Length))"
             }
 
-            az deployment sub create `
-            --location "${{ parameters.deploymentLocation }}" `
-            --template-file "${{ parameters.bicepFile }}" `
-            --parameters environmentName="${{ parameters.environmentName }}" `
-            --parameters location="${{ parameters.location }}" `
-            --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
-            --parameters principalId="${{ parameters.principalId }}" `
-            --parameters dbAdminPassword="$dbAdminPwd" `
-            --parameters dbAppUserPassword="$dbAppUserPwd"
+            Write-Host "=========================================="
+            Write-Host "Starting Bicep deployment..."
+            Write-Host "Location: ${{ parameters.location }}"
+            Write-Host "Resource Group: ${{ parameters.resourceGroup }}"
+            Write-Host "Environment: ${{ parameters.environmentName }}"
+            Write-Host "=========================================="
+
+            $deploymentResult = az deployment sub create `
+              --location "${{ parameters.deploymentLocation }}" `
+              --template-file "${{ parameters.bicepFile }}" `
+              --parameters environmentName="${{ parameters.environmentName }}" `
+              --parameters location="${{ parameters.location }}" `
+              --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
+              --parameters principalId="${{ parameters.principalId }}" `
+              --parameters dbAdminPassword="$dbAdminPwd" `
+              --parameters dbAppUserPassword="$dbAppUserPwd" `
+              2>&1
+
+            $exitCode = $LASTEXITCODE
+
+            if ($exitCode -ne 0) {
+              Write-Host "=========================================="
+              Write-Host "DEPLOYMENT FAILED - Fetching detailed error logs..."
+              Write-Host "=========================================="
+
+              # List deployment operations at subscription level
+              Write-Host "`n--- Subscription-level deployment operations ---"
+              az deployment sub show --name main --query "properties.error" -o json 2>$null
+
+              # List deployment operations for the resource group
+              Write-Host "`n--- Resource Group deployment operations ---"
+              az deployment group list --resource-group "${{ parameters.resourceGroup }}" -o table 2>$null
+
+              # Get detailed errors for failed deployments
+              Write-Host "`n--- Detailed deployment errors ---"
+              az deployment operation group list `
+                --resource-group "${{ parameters.resourceGroup }}" `
+                --name database `
+                --query "[?properties.provisioningState=='Failed'].{Operation:properties.targetResource.resourceName, Error:properties.statusMessage}" `
+                -o json 2>$null
+
+              Write-Host "`n--- Full error output ---"
+              Write-Host $deploymentResult
+
+              exit $exitCode
+            }
+
+            Write-Host "=========================================="
+            Write-Host "Deployment completed successfully!"
+            Write-Host "=========================================="
 
 
