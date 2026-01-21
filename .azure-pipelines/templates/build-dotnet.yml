@@ -1,7 +1,7 @@
 parameters:
   solution: ''
   buildConfiguration: 'Release'
-  dotnetSdkVersion: '10.0.x'
+  dotnetSdkVersion: '8.0.x'
 
 jobs:
   - job: BuildDotNet
