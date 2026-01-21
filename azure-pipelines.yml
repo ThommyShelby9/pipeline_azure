@@ -50,6 +50,9 @@ stages:
           location: $(location)
           bicepFile: infra/main.bicep
           environmentName: 'securefintech'
+          principalId: $(principalId)
+          dbAdminPassword: $(dbAdminPassword)
+          dbAppUserPassword: $(dbAppUserPassword)
 
   # ===========================================
   # Stage 2: Build .NET - US-02

@@ -4,6 +4,10 @@ parameters:
   location: ''
   bicepFile: ''
   environmentName: ''
+  principalId: ''
+  dbAdminPassword: ''
+  dbAppUserPassword: ''
+
 
 jobs:
   - job: DeployInfra
@@ -19,11 +23,12 @@ jobs:
           scriptLocation: 'inlineScript'
           inlineScript: |
             az deployment sub create `
-              --location "${{ parameters.location }}" `
-              --template-file "${{ parameters.bicepFile }}" `
-              --parameters environmentName="${{ parameters.environmentName }}" `
-              --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
-              --parameters principalId="$(principalId)" `
-              --parameters dbAdminPassword="$(dbAdminPassword)" `
-              --parameters dbAppUserPassword="$(dbAppUserPassword)"
+            --location "${{ parameters.location }}" `
+            --template-file "${{ parameters.bicepFile }}" `
+            --parameters environmentName="${{ parameters.environmentName }}" `
+            --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
+            --parameters principalId="${{ parameters.principalId }}" `
+            --parameters dbAdminPassword="${{ parameters.dbAdminPassword }}" `
+            --parameters dbAppUserPassword="${{ parameters.dbAppUserPassword }}"
+
 
