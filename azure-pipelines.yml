@@ -28,7 +28,7 @@ variables:
   sonarProjectName: 'ShoppingProject'
 
   # Azure configuration
-  azureServiceConnection: 'AzureServiceConnection'
+  azureServiceConnection: 'azure-securefintech-oidc'
   resourceGroup: 'rg-securefintech'
   location: 'westeurope'
   keyVaultName: 'kv-securefintech'
