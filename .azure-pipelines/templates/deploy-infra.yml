@@ -23,6 +23,10 @@ jobs:
           scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           inlineScript: |
+            # Register required resource providers
+            Write-Host "Registering Microsoft.ContainerInstance provider..."
+            az provider register --namespace Microsoft.ContainerInstance --wait
+
             # Generate secure passwords if not provided
             $dbAdminPwd = "${{ parameters.dbAdminPassword }}"
             $dbAppUserPwd = "${{ parameters.dbAppUserPassword }}"
