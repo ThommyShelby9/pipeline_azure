@@ -41,16 +41,7 @@ resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   }
 }
 
-resource sqlServerAuditingSettings 'Microsoft.Sql/servers/auditingSettings@2023-08-01-preview' = {
-  parent: sqlServer
-  name: 'default'
-  properties: {
-    state: 'Enabled'
-    isAzureMonitorTargetEnabled: true
-  }
-}
-
-resource sqlDatabase 'Microsoft.Sql/servers/databases@2023-08-01-preview' = {
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2022-05-01-preview' = {
   parent: sqlServer
   name: databaseName
   location: location
