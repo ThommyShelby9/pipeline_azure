@@ -29,7 +29,7 @@ variables:
 
   # Azure configuration
   azureServiceConnection: 'azure-securefintech-oidc'
-  resourceGroup: 'rg-securefintech'
+  resourceGroup: 'rg-securefintech-westus2'
   location: 'westus2'
   keyVaultName: 'kv-securefintech'
   webAppName: 'securefintech-api'
