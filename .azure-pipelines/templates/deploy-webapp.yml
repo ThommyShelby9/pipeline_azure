@@ -12,7 +12,7 @@ jobs:
     displayName: 'Deploy App Service'
     environment: ${{ parameters.environmentName }}
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     strategy:
       runOnce:
         deploy:

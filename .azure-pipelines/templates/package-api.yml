@@ -10,7 +10,7 @@ jobs:
   - job: PackageApi
     displayName: 'Package API with React assets'
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     steps:
       - checkout: self
 

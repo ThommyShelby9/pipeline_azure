@@ -6,7 +6,7 @@ jobs:
   - job: SmokeTests
     displayName: 'Post-deployment smoke tests'
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     steps:
       - script: |
           echo "========================================"

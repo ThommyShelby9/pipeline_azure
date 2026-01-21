@@ -9,7 +9,7 @@ jobs:
   - job: BuildFrontend
     displayName: 'Build React frontend'
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     steps:
       - task: NodeTool@0
         displayName: 'Use Node.js'

@@ -11,7 +11,7 @@ jobs:
     displayName: 'Swap deployment slots'
     environment: ${{ parameters.environmentName }}
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     strategy:
       runOnce:
         deploy:

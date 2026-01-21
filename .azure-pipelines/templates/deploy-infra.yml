@@ -9,7 +9,7 @@ jobs:
   - job: DeployInfra
     displayName: 'Deploy IaC (Bicep)'
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     steps:
       - task: AzureCLI@2
         displayName: 'Deploy Bicep'

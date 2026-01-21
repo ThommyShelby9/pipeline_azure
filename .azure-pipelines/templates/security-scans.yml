@@ -15,7 +15,7 @@ jobs:
   - job: DevSecOps
     displayName: 'SonarCloud and Gitleaks'
     pool:
-      vmImage: 'ubuntu-latest'
+        name: SelfHosted
     steps:
       - task: UseDotNet@2
         displayName: 'Use .NET SDK'
