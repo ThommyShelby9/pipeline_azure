@@ -23,6 +23,17 @@ jobs:
           scriptType: 'pscore'
           scriptLocation: 'inlineScript'
           inlineScript: |
+            # Generate secure passwords if not provided
+            $dbAdminPwd = "${{ parameters.dbAdminPassword }}"
+            $dbAppUserPwd = "${{ parameters.dbAppUserPassword }}"
+
+            if ([string]::IsNullOrEmpty($dbAdminPwd)) {
+              $dbAdminPwd = "Adm" + [System.Guid]::NewGuid().ToString().Substring(0,12) + "!"
+            }
+            if ([string]::IsNullOrEmpty($dbAppUserPwd)) {
+              $dbAppUserPwd = "App" + [System.Guid]::NewGuid().ToString().Substring(0,12) + "!"
+            }
+
             az deployment sub create `
             --location "${{ parameters.deploymentLocation }}" `
             --template-file "${{ parameters.bicepFile }}" `
@@ -30,7 +41,7 @@ jobs:
             --parameters location="${{ parameters.location }}" `
             --parameters resourceGroupName="${{ parameters.resourceGroup }}" `
             --parameters principalId="${{ parameters.principalId }}" `
-            --parameters dbAdminPassword="${{ parameters.dbAdminPassword }}" `
-            --parameters dbAppUserPassword="${{ parameters.dbAppUserPassword }}"
+            --parameters dbAdminPassword="$dbAdminPwd" `
+            --parameters dbAppUserPassword="$dbAppUserPwd"
 
 
