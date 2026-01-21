@@ -22,14 +22,14 @@ jobs:
           packageType: 'sdk'
           version: ${{ parameters.dotnetSdkVersion }}
 
-      - task: SonarCloudPrepare@1
-        displayName: 'Prepare SonarCloud analysis'
+      - task: SonarQubeCloudPrepare@1
+        displayName: 'Prepare SonarQube Cloud analysis'
         inputs:
-          SonarCloud: ${{ parameters.sonarServiceConnection }}
-          organization: ${{ parameters.sonarOrganization }}
-          scannerMode: 'MSBuild'
-          projectKey: ${{ parameters.sonarProjectKey }}
-          projectName: ${{ parameters.sonarProjectName }}
+            SonarQubeCloud: ${{ parameters.sonarServiceConnection }}
+            organization: ${{ parameters.sonarOrganization }}
+            scannerMode: 'MSBuild'
+            projectKey: ${{ parameters.sonarProjectKey }}
+            projectName: ${{ parameters.sonarProjectName }}
 
       - task: DotNetCoreCLI@2
         displayName: 'Build for analysis'
@@ -38,13 +38,13 @@ jobs:
           projects: ${{ parameters.solution }}
           arguments: '--configuration ${{ parameters.buildConfiguration }}'
 
-      - task: SonarCloudAnalyze@1
-        displayName: 'Run SonarCloud analysis'
+      - task: SonarQubeCloudAnalyze@1
+        displayName: 'Run SonarQube Cloud analysis'
 
-      - task: SonarCloudPublish@1
-        displayName: 'Publish SonarCloud quality gate'
+      - task: SonarQubeCloudPublish@1
+        displayName: 'Publish SonarQube Cloud quality gate'
         inputs:
-          pollingTimeoutSec: '300'
+            pollingTimeoutSec: '300'
 
       - script: |
           set -euo pipefail

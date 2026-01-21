@@ -21,8 +21,8 @@ variables:
   artifactName: 'drop'
   runIaC: 'false'
 
-  # SonarCloud configuration
-  sonarServiceConnection: 'SonarCloud'
+  # SonarQube configuration
+  sonarServiceConnection: 'SonarQubeCloud'
   sonarOrganization: 'securefintech'
   sonarProjectKey: 'securefintech-shoppingproject'
   sonarProjectName: 'ShoppingProject'
