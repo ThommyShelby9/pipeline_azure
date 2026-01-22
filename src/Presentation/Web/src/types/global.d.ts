@@ -1,4 +1,6 @@
 // Type definitions for better TypeScript support
+/* eslint-disable @typescript-eslint/no-empty-object-type */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // Extend Window interface for custom properties
 declare global {

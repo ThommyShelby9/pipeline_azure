@@ -60,7 +60,7 @@ export class AuthAPIService implements IAuthService {
     }
     
     // Map to domain User entity
-    const { username, ...user } = userInfo;
+    const { username: _username, ...user } = userInfo;
     return user;
   }
 

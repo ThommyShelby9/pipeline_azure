@@ -45,37 +45,37 @@ const preferencesSlice = createSlice({
   reducers: {
     updatePreferences: (state, action: PayloadAction<Partial<UserPreferences>>) => {
       Object.assign(state, action.payload);
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     toggleEmailNotifications: (state) => {
       state.emailNotifications = !state.emailNotifications;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     togglePushNotifications: (state) => {
       state.pushNotifications = !state.pushNotifications;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     setCurrency: (state, action: PayloadAction<'USD' | 'EUR' | 'TRY'>) => {
       state.currency = action.payload;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     setItemsPerPage: (state, action: PayloadAction<number>) => {
       state.itemsPerPage = action.payload;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     setDefaultView: (state, action: PayloadAction<'grid' | 'list'>) => {
       state.defaultView = action.payload;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     toggleAutoSave: (state) => {
       state.autoSave = !state.autoSave;
-      const { isInitialized, ...preferences } = state;
+      const { isInitialized: _isInitialized, ...preferences } = state;
       localStorage.setItem('userPreferences', JSON.stringify(preferences));
     },
     resetPreferences: (state) => {
