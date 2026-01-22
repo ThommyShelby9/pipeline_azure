@@ -10,7 +10,17 @@
       "Bash(dotnet test:*)",
       "Bash(git restore:*)",
       "Bash(git rev-parse:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(Select-String -Pattern \"Message d''erreur|Arborescence|at \" -Context 0,3)",
+      "Bash(Select-Object -First 30)",
+      "Bash(git fetch:*)",
+      "Bash(grep:*)",
+      "Bash(npm install)",
+      "Bash('/subscriptions/.../deployments/main' cannot be saved, because this)",
+      "Bash(would overwrite an existing deployment which is still active.\"\nEOF\n\\)\")",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run test:*)"
     ]
   }
 }

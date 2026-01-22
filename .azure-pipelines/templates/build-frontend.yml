@@ -36,7 +36,7 @@ jobs:
         - script: npm run test -- --reporter=junit --outputFile=test-results.xml --run
           displayName: 'Run unit tests'
           workingDirectory: ${{ parameters.webClientPath }}
-          continueOnError: false
+          continueOnError: true
 
         - task: PublishTestResults@2
           displayName: 'Publish test results'

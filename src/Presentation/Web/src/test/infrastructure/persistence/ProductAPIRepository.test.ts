@@ -34,40 +34,42 @@ describe('ProductAPIRepository', () => {
 
     it('getAll should fetch products from API', async () => {
         // Arrange
-        (httpClient.get as any).mockResolvedValue({ data: { items: mockProducts } });
+        (httpClient.get as any).mockResolvedValue({ data: { data: mockProducts } });
 
         // Act
         const result = await repository.getAll();
 
         // Assert
-        expect(httpClient.get).toHaveBeenCalledWith('/api/v1/Products');
+        expect(httpClient.get).toHaveBeenCalledWith('/Products');
         expect(result).toEqual(mockProducts);
     });
 
     it('getById should fetch a single product', async () => {
         // Arrange
         const mockProduct = mockProducts[0];
-        (httpClient.get as any).mockResolvedValue({ data: mockProduct });
+        (httpClient.get as any).mockResolvedValue({ data: { data: mockProduct } });
 
         // Act
         const result = await repository.getById(1);
 
         // Assert
-        expect(httpClient.get).toHaveBeenCalledWith('/api/v1/Products/1');
+        expect(httpClient.get).toHaveBeenCalledWith('/Products/1');
         expect(result).toEqual(mockProduct);
     });
 
     it('create should post new product', async () => {
         // Arrange
         const newProduct = { title: 'New Product', price: 50, description: 'Desc', category: 'cat', image: 'img' };
-        const createdProduct = { ...newProduct, id: 2 };
-        (httpClient.post as any).mockResolvedValue({ data: createdProduct });
+        const createdProduct = { ...newProduct, id: 2, rating: { rate: 0, count: 0 } };
+        (httpClient.post as any).mockResolvedValue({ data: { data: 2 } });
+        (httpClient.get as any).mockResolvedValue({ data: { data: createdProduct } });
 
         // Act
         const result = await repository.create(newProduct as any);
 
         // Assert
-        expect(httpClient.post).toHaveBeenCalledWith('/api/v1/Products', newProduct);
+        expect(httpClient.post).toHaveBeenCalledWith('/Products', newProduct);
+        expect(httpClient.get).toHaveBeenCalledWith('/Products/2');
         expect(result).toEqual(createdProduct);
     });
 });
