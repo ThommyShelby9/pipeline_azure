@@ -56,10 +56,12 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll(typeof(IDistributedCache));
             services.AddDistributedMemoryCache();
 
-            // Replace DbContext with InMemory database explicitly
+            // Replace DbContext with InMemory database explicitly (keeping interceptors)
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
-            services.AddDbContext<ApplicationDbContext>(options =>
+            services.AddDbContext<ApplicationDbContext>((sp, options) =>
             {
+                // Add interceptors to ensure domain events are handled
+                options.AddInterceptors(sp.GetServices<Microsoft.EntityFrameworkCore.Diagnostics.ISaveChangesInterceptor>());
                 options.UseInMemoryDatabase(_dbName);
             });
 
