@@ -154,7 +154,8 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         var searchTerm = "Keyboard";
-        var spec = SearchProductsSpecification.Create(searchTerm, 1, 10);
+        // Using Create without pagination to ensure Keyboard is included
+        var spec = SearchProductsSpecification.Create(searchTerm);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);

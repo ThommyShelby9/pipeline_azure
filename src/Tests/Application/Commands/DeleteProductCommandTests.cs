@@ -35,8 +35,8 @@ public class DeleteProductCommandTests
         // Act
         await _handler.Handle(command, CancellationToken.None);
 
-        // Assert
-        _mockContext.Verify(x => x.Remove(existingProduct), Times.Once);
+        // Assert - Soft delete: status changed to Deleted, not physically removed
+        existingProduct.Status.Should().Be(ShoppingProject.Domain.Enums.EntityStatus.Deleted);
         _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -78,6 +78,6 @@ public class DeleteProductCommandTests
             _handler.Handle(command, CancellationToken.None)
         );
 
-        _mockContext.Verify(x => x.Remove(It.IsAny<Product>()), Times.Never);
+        _mockContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }
