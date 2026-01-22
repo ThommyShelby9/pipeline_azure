@@ -21,6 +21,12 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
     private IOutboxMessageStore _outboxStore = null!;
     private IClock _clock = null!;
     private readonly string _databaseName = Guid.NewGuid().ToString();
+    private readonly ITestOutputHelper _output;
+
+    public OutboxMessageStoreIntegrationTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
 
     public Task InitializeAsync()
     {
@@ -154,25 +160,41 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task MarkAsFailedAsync_ImplementsExponentialBackoff()
     {
+        _output.WriteLine("[Test] MarkAsFailedAsync_ImplementsExponentialBackoff started");
+
         // Arrange
+        _output.WriteLine("[Arrange] Creating test product and outbox message");
         var product = Product.Create("Test", 10m, "Desc", "Cat", "https://img.jpg");
         var message = await _outboxStore.AddEventAsync(product.DomainEvents.First());
         var utcNow = DateTimeOffset.UtcNow;
+        _output.WriteLine($"[Arrange] Message created with ID: {message.Id} at {utcNow}");
 
         // Act - first failure
+        _output.WriteLine("[Act] Marking message as failed (1st attempt)");
         await _outboxStore.MarkAsFailedAsync(message.Id, "Error 1", utcNow);
         var after1stFailure = await _outboxStore.GetByIdAsync(message.Id);
+        _output.WriteLine($"[Act] After 1st failure - RetryCount: {after1stFailure!.RetryCount}, NextRetry: {after1stFailure.NextRetryUtc}");
 
         // Act - second failure
+        _output.WriteLine("[Act] Marking message as failed (2nd attempt)");
         await _outboxStore.MarkAsFailedAsync(message.Id, "Error 2", utcNow);
         var after2ndFailure = await _outboxStore.GetByIdAsync(message.Id);
+        _output.WriteLine($"[Act] After 2nd failure - RetryCount: {after2ndFailure!.RetryCount}, NextRetry: {after2ndFailure.NextRetryUtc}");
 
-        // Assert - exponential backoff increases delay
-        var delay1 = (after1stFailure!.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
-        var delay2 = (after2ndFailure!.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
+        // Assert - exponential backoff increases delay (2^1 = 2min, 2^2 = 4min)
+        var delay1 = (after1stFailure.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
+        var delay2 = (after2ndFailure.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
+        _output.WriteLine($"[Assert] Delay1: {delay1} minutes, Delay2: {delay2} minutes");
 
+        _output.WriteLine("[Assert] Verifying delay1 is approximately 2.0 minutes");
+        delay1.Should().BeApproximately(2.0, 0.1);
+        _output.WriteLine("[Assert] Verifying delay2 is approximately 4.0 minutes");
+        delay2.Should().BeApproximately(4.0, 0.1);
+        _output.WriteLine("[Assert] Verifying delay2 > delay1");
         delay2.Should().BeGreaterThan(delay1);
+        _output.WriteLine("[Assert] Verifying retry count is 2");
         after2ndFailure.RetryCount.Should().Be(2);
+        _output.WriteLine("[Test] MarkAsFailedAsync_ImplementsExponentialBackoff passed");
     }
 
     [Fact]

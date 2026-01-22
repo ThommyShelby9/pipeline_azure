@@ -10,11 +10,13 @@ namespace ShoppingProject.UnitTests.IntegrationTests
     {
         private readonly HttpClient _client;
         private readonly Faker _faker;
+        private readonly ITestOutputHelper _output;
 
-        public IdentityIntegrationTests(CustomWebApplicationFactory factory)
+        public IdentityIntegrationTests(CustomWebApplicationFactory factory, ITestOutputHelper output)
         {
             _client = factory.CreateClient();
             _faker = new Faker();
+            _output = output;
         }
 
         [Fact]
@@ -120,33 +122,61 @@ namespace ShoppingProject.UnitTests.IntegrationTests
         [Fact]
         public async Task UpdateUser_Should_Return_Success()
         {
+            _output.WriteLine("[Test] UpdateUser_Should_Return_Success started");
+
+            _output.WriteLine("[Act] Logging in as user@test.com");
             var loginResponse = await _client.PostAsJsonAsync(
                 "/api/v1/identity/login",
                 new { Email = "user@test.com", Password = "User123!" }
             );
+            _output.WriteLine($"[Act] Login response status: {loginResponse.StatusCode}");
             loginResponse.EnsureSuccessStatusCode();
 
             var authResult = await loginResponse.Content.ReadFromJsonAsync<
                 ServiceResult<AuthResponse>
             >();
             Assert.NotNull(authResult?.Data);
+            _output.WriteLine($"[Act] Login successful, token received");
 
             _client.DefaultRequestHeaders.Authorization =
                 new System.Net.Http.Headers.AuthenticationHeaderValue(
                     "Bearer",
                     authResult!.Data!.AccessToken
                 );
+            _output.WriteLine("[Act] Authorization header set");
 
+            // Get current user info to retrieve UserId
+            _output.WriteLine("[Act] Fetching current user info to get UserId");
+            var meResponse = await _client.GetAsync("/api/v1/identity/me");
+            _output.WriteLine($"[Act] Get current user response status: {meResponse.StatusCode}");
+            meResponse.EnsureSuccessStatusCode();
+            var meResult = await meResponse.Content.ReadFromJsonAsync<
+                ServiceResult<UserInfoResponse>
+            >();
+            Assert.NotNull(meResult?.Data);
+            _output.WriteLine($"[Act] Retrieved UserId: {meResult!.Data!.Id}");
+
+            _output.WriteLine("[Act] Updating user information");
             var updateResponse = await _client.PutAsJsonAsync(
                 "/api/v1/identity/me",
                 new
                 {
+                    UserId = meResult.Data.Id,
                     FirstName = "Furkan",
                     LastName = "Türkyılmaz",
                     Gender = "Male",
                 }
             );
+            _output.WriteLine($"[Act] Update user response status: {updateResponse.StatusCode}");
+
+            if (!updateResponse.IsSuccessStatusCode)
+            {
+                var errorContent = await updateResponse.Content.ReadAsStringAsync();
+                _output.WriteLine($"[Error] Update failed with status {updateResponse.StatusCode}: {errorContent}");
+            }
+
             updateResponse.EnsureSuccessStatusCode();
+            _output.WriteLine("[Test] UpdateUser_Should_Return_Success passed");
         }
     }
 }

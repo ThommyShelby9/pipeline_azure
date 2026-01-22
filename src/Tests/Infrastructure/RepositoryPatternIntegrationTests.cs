@@ -18,6 +18,12 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
     private ApplicationDbContext _context = null!;
     private Repository<Product> _repository = null!;
     private readonly string _databaseName = Guid.NewGuid().ToString();
+    private readonly ITestOutputHelper _output;
+
+    public RepositoryPatternIntegrationTests(ITestOutputHelper output)
+    {
+        _output = output;
+    }
 
     public Task InitializeAsync()
     {
@@ -206,7 +212,10 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task ListAsync_WithSearchSpecification()
     {
+        _output.WriteLine("[Test] ListAsync_WithSearchSpecification started");
+
         // Arrange
+        _output.WriteLine("[Arrange] Adding 3 products to repository");
         await _repository.AddAsync(
             Product.Create(
                 "Laptop Computer",
@@ -229,15 +238,25 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
             Product.Create("Chair", 150m, "Comfortable seating", "Furniture", "https://img3.jpg")
         );
         await _context.SaveChangesAsync();
+        _output.WriteLine("[Arrange] Products saved successfully");
 
         // Act
-        // SearchProductsSpecification missing
-        var spec = ActiveProductsSpecification.Create();
+        _output.WriteLine("[Act] Searching for products with term 'Laptop'");
+        var spec = SearchProductsSpecification.Create("Laptop");
         var results = await _repository.ListAsync(spec);
+        _output.WriteLine($"[Act] Search returned {results.Count} result(s)");
+
+        foreach (var result in results)
+        {
+            _output.WriteLine($"[Result] Product: {result.Title}, Price: {result.Price}");
+        }
 
         // Assert
+        _output.WriteLine("[Assert] Verifying results count is 1");
         results.Should().HaveCount(1);
+        _output.WriteLine("[Assert] Verifying product title is 'Laptop Computer'");
         results[0].Title.Should().Be("Laptop Computer");
+        _output.WriteLine("[Test] ListAsync_WithSearchSpecification passed");
     }
 
     [Fact]
@@ -305,7 +324,10 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
     [Fact]
     public async Task CountAsync_WithSpecification()
     {
+        _output.WriteLine("[Test] CountAsync_WithSpecification started");
+
         // Arrange
+        _output.WriteLine("[Arrange] Adding 3 products with different prices");
         await _repository.AddAsync(
             Product.Create("Expensive", 1000m, "Desc", "Cat", "https://img1.jpg")
         );
@@ -316,15 +338,18 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
             Product.Create("Cheap 2", 15m, "Desc", "Cat", "https://img3.jpg")
         );
         await _context.SaveChangesAsync();
+        _output.WriteLine("[Arrange] Products saved: Expensive (1000), Cheap 1 (10), Cheap 2 (15)");
 
         // Act
-        // ProductsByPriceRangeSpecification seems missing from ProductSpecifications.cs
-        // I will use ActiveProductsSpecification for now to make tests compile if possible
-        var spec = ActiveProductsSpecification.Create();
+        _output.WriteLine("[Act] Counting products with price range 0-50");
+        var spec = ProductsByPriceRangeSpecification.Create(0, 50);
         var count = await _repository.CountAsync(spec);
+        _output.WriteLine($"[Act] Count returned: {count}");
 
         // Assert
+        _output.WriteLine("[Assert] Verifying count is 2");
         count.Should().Be(2);
+        _output.WriteLine("[Test] CountAsync_WithSpecification passed");
     }
 
     [Fact]

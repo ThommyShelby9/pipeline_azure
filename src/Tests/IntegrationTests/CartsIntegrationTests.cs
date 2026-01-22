@@ -11,10 +11,12 @@ namespace ShoppingProject.UnitTests.IntegrationTests
     public class CartsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
+        private readonly ITestOutputHelper _output;
 
-        public CartsIntegrationTests(CustomWebApplicationFactory factory)
+        public CartsIntegrationTests(CustomWebApplicationFactory factory, ITestOutputHelper output)
         {
             _client = factory.CreateClient();
+            _output = output;
         }
 
         private async Task AuthenticateAsync()
@@ -49,25 +51,48 @@ namespace ShoppingProject.UnitTests.IntegrationTests
         [Fact]
         public async Task GetCartById_Should_Return_Cart()
         {
-            await AuthenticateAsync();
+            _output.WriteLine("[Test] GetCartById_Should_Return_Cart started");
 
-            // Önce kullanıcının sepetlerini çek
+            _output.WriteLine("[Act] Authenticating user");
+            await AuthenticateAsync();
+            _output.WriteLine("[Act] User authenticated successfully");
+
+            // Önce bir sepet oluştur
+            _output.WriteLine("[Act] Creating a cart with test product");
+            var product = new { Title = "Test Product", Description = "Test Description", Price = 50.0, Category = "electronics", Image = "https://example.com/img.jpg", Rating = new { Rate = 4.5, Count = 100 }, Quantity = 1 };
+            var createResponse = await _client.PostAsJsonAsync("/api/v1/carts", product);
+            _output.WriteLine($"[Act] Create cart response status: {createResponse.StatusCode}");
+            createResponse.EnsureSuccessStatusCode();
+
+            var createResult = await createResponse.Content.ReadFromJsonAsync<ServiceResult<int>>();
+            Assert.NotNull(createResult);
+            Assert.True(createResult!.IsSuccess);
+            Assert.True(createResult.Data > 0);
+            _output.WriteLine($"[Act] Cart created successfully with ID: {createResult.Data}");
+
+            // Şimdi kullanıcının sepetlerini çek
+            _output.WriteLine("[Act] Fetching all user carts");
             var cartsResponse = await _client.GetAsync("/api/v1/carts");
+            _output.WriteLine($"[Act] Get carts response status: {cartsResponse.StatusCode}");
             cartsResponse.EnsureSuccessStatusCode();
 
             var result = await cartsResponse.Content.ReadFromJsonAsync<ServiceResult<List<CartDto>>>();
             Assert.NotNull(result);
             Assert.True(result!.IsSuccess);
+            _output.WriteLine($"[Act] Retrieved {result.Data!.Count} cart(s)");
             Assert.NotEmpty(result.Data!);
 
             // İlk sepetin id'sini al
             var cartId = result.Data![0].Id;
+            _output.WriteLine($"[Act] Getting cart by ID: {cartId}");
 
             var response = await _client.GetAsync($"/api/v1/carts/{cartId}");
+            _output.WriteLine($"[Act] Get cart by ID response status: {response.StatusCode}");
             Assert.True(
                 response.StatusCode == HttpStatusCode.OK
                     || response.StatusCode == HttpStatusCode.NotFound
             );
+            _output.WriteLine("[Test] GetCartById_Should_Return_Cart passed");
         }
 
         [Fact]
