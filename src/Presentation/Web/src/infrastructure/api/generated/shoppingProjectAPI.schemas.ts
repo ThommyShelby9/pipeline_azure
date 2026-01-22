@@ -116,7 +116,6 @@ export interface ForgotPasswordCommand {
 export type HttpStatusCode = typeof HttpStatusCode[keyof typeof HttpStatusCode];
 
 
-// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const HttpStatusCode = {
   NUMBER_100: 100,
   NUMBER_101: 101,

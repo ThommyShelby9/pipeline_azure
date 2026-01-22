@@ -1,6 +1,4 @@
 // Type definitions for better TypeScript support
-/* eslint-disable @typescript-eslint/no-empty-object-type */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 
 // Extend Window interface for custom properties
 declare global {
@@ -16,6 +14,7 @@ interface ImportMetaEnv {
   // Add more env variables as needed
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
