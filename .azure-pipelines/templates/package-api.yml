@@ -26,11 +26,27 @@ jobs:
           artifact: 'web-dist'
           path: '$(Pipeline.Workspace)/web-dist'
 
-      - script: |
-          rm -rf src/Presentation/API/wwwroot
-          mkdir -p src/Presentation/API/wwwroot
-          cp -R $(Pipeline.Workspace)/web-dist/* src/Presentation/API/wwwroot/
+      - task: PowerShell@2
         displayName: 'Copy React build to wwwroot'
+        inputs:
+          targetType: 'inline'
+          script: |
+            $wwwrootPath = "src/Presentation/API/wwwroot"
+
+            if (Test-Path $wwwrootPath) {
+                Remove-Item -Path $wwwrootPath -Recurse -Force
+                Write-Host "Removed existing wwwroot folder"
+            }
+
+            New-Item -ItemType Directory -Path $wwwrootPath -Force | Out-Null
+            Write-Host "Created wwwroot folder"
+
+            $sourcePath = "$(Pipeline.Workspace)/web-dist/*"
+            Copy-Item -Path $sourcePath -Destination $wwwrootPath -Recurse -Force
+            Write-Host "Copied React build to wwwroot"
+
+            $fileCount = (Get-ChildItem -Path $wwwrootPath -Recurse -File).Count
+            Write-Host "Copied $fileCount files to wwwroot"
 
       - task: DotNetCoreCLI@2
         displayName: 'Publish API'

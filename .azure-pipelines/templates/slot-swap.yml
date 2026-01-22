@@ -21,29 +21,32 @@ jobs:
               displayName: 'Verify staging slot health'
               inputs:
                 azureSubscription: ${{ parameters.azureServiceConnection }}
-                scriptType: 'bash'
+                scriptType: 'pscore'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
-                  echo "Checking staging slot health..."
-                  SLOT_URL="https://${{ parameters.webAppName }}-${{ parameters.sourceSlot }}.azurewebsites.net/health"
+                  Write-Host "Checking staging slot health..."
+                  $slotUrl = "https://${{ parameters.webAppName }}-${{ parameters.sourceSlot }}.azurewebsites.net/health"
 
-                  MAX_RETRIES=5
-                  RETRY_COUNT=0
+                  $maxRetries = 5
+                  $retryCount = 0
 
-                  while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-                    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$SLOT_URL" --max-time 30)
+                  while ($retryCount -lt $maxRetries) {
+                      try {
+                          $response = Invoke-WebRequest -Uri $slotUrl -Method Get -TimeoutSec 30 -UseBasicParsing
+                          if ($response.StatusCode -eq 200) {
+                              Write-Host "Staging slot is healthy (HTTP $($response.StatusCode))"
+                              exit 0
+                          }
+                      } catch {
+                          $statusCode = $_.Exception.Response.StatusCode.value__
+                          Write-Host "Health check attempt $($retryCount + 1) failed (HTTP $statusCode). Retrying in 10s..."
+                      }
 
-                    if [ "$HTTP_STATUS" = "200" ]; then
-                      echo "Staging slot is healthy (HTTP $HTTP_STATUS)"
-                      exit 0
-                    fi
+                      $retryCount++
+                      Start-Sleep -Seconds 10
+                  }
 
-                    RETRY_COUNT=$((RETRY_COUNT + 1))
-                    echo "Health check attempt $RETRY_COUNT failed (HTTP $HTTP_STATUS). Retrying in 10s..."
-                    sleep 10
-                  done
-
-                  echo "##vso[task.logissue type=error]Staging slot health check failed after $MAX_RETRIES attempts"
+                  Write-Host "##vso[task.logissue type=error]Staging slot health check failed after $maxRetries attempts"
                   exit 1
 
             # Perform slot swap
@@ -63,27 +66,30 @@ jobs:
               displayName: 'Verify production health post-swap'
               inputs:
                 azureSubscription: ${{ parameters.azureServiceConnection }}
-                scriptType: 'bash'
+                scriptType: 'pscore'
                 scriptLocation: 'inlineScript'
                 inlineScript: |
-                  echo "Verifying production health after swap..."
-                  PROD_URL="https://${{ parameters.webAppName }}.azurewebsites.net/health"
+                  Write-Host "Verifying production health after swap..."
+                  $prodUrl = "https://${{ parameters.webAppName }}.azurewebsites.net/health"
 
-                  MAX_RETRIES=5
-                  RETRY_COUNT=0
+                  $maxRetries = 5
+                  $retryCount = 0
 
-                  while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
-                    HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$PROD_URL" --max-time 30)
+                  while ($retryCount -lt $maxRetries) {
+                      try {
+                          $response = Invoke-WebRequest -Uri $prodUrl -Method Get -TimeoutSec 30 -UseBasicParsing
+                          if ($response.StatusCode -eq 200) {
+                              Write-Host "Production is healthy (HTTP $($response.StatusCode))"
+                              exit 0
+                          }
+                      } catch {
+                          $statusCode = $_.Exception.Response.StatusCode.value__
+                          Write-Host "Health check attempt $($retryCount + 1) failed (HTTP $statusCode). Retrying in 10s..."
+                      }
 
-                    if [ "$HTTP_STATUS" = "200" ]; then
-                      echo "Production is healthy (HTTP $HTTP_STATUS)"
-                      exit 0
-                    fi
+                      $retryCount++
+                      Start-Sleep -Seconds 10
+                  }
 
-                    RETRY_COUNT=$((RETRY_COUNT + 1))
-                    echo "Health check attempt $RETRY_COUNT failed (HTTP $HTTP_STATUS). Retrying in 10s..."
-                    sleep 10
-                  done
-
-                  echo "##vso[task.logissue type=error]Production health check failed after swap - consider rollback"
+                  Write-Host "##vso[task.logissue type=error]Production health check failed after swap - consider rollback"
                   exit 1

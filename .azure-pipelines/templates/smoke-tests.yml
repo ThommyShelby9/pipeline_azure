@@ -8,74 +8,100 @@ jobs:
     pool:
         name: SelfHosted
     steps:
-      - script: |
-          echo "========================================"
-          echo "Running smoke tests against ${{ parameters.baseUrl }}"
-          echo "Environment: ${{ parameters.environmentName }}"
-          echo "========================================"
-
-          FAILED=0
-
-          # Test 1: Health endpoint
-          echo ""
-          echo "Test 1: Health endpoint (/health)"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/health" --max-time 30)
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "  [FAIL] Health endpoint returned HTTP $HTTP_STATUS"
-            FAILED=1
-          else
-            echo "  [PASS] Health endpoint returned HTTP 200"
-          fi
-
-          # Test 2: API Swagger endpoint (may be disabled in production)
-          echo ""
-          echo "Test 2: API availability (/swagger)"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/swagger/index.html" --max-time 30)
-          if [ "$HTTP_STATUS" = "200" ]; then
-            echo "  [PASS] Swagger UI available (HTTP 200)"
-          else
-            echo "  [INFO] Swagger UI not available (HTTP $HTTP_STATUS) - may be disabled in production"
-          fi
-
-          # Test 3: Static files (React app - index.html)
-          echo ""
-          echo "Test 3: Static files (index.html)"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/" --max-time 30)
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "  [FAIL] Static files not served correctly (HTTP $HTTP_STATUS)"
-            FAILED=1
-          else
-            echo "  [PASS] Static files served correctly (HTTP 200)"
-          fi
-
-          # Test 4: Check for React app root element
-          echo ""
-          echo "Test 4: React app loaded (checking for 'root' element)"
-          CONTENT=$(curl -s "${{ parameters.baseUrl }}/" --max-time 30)
-          if ! echo "$CONTENT" | grep -q "root"; then
-            echo "  [FAIL] React app root element not found in response"
-            FAILED=1
-          else
-            echo "  [PASS] React app root element found"
-          fi
-
-          # Test 5: Health-UI endpoint
-          echo ""
-          echo "Test 5: Health UI endpoint (/health-ui)"
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ parameters.baseUrl }}/health-ui" --max-time 30)
-          if [ "$HTTP_STATUS" = "200" ]; then
-            echo "  [PASS] Health UI available (HTTP 200)"
-          else
-            echo "  [INFO] Health UI returned HTTP $HTTP_STATUS"
-          fi
-
-          echo ""
-          echo "========================================"
-          if [ $FAILED -eq 0 ]; then
-            echo "All critical smoke tests passed!"
-            exit 0
-          else
-            echo "Some smoke tests failed!"
-            exit 1
-          fi
+      - task: PowerShell@2
         displayName: 'Run smoke tests'
+        inputs:
+          targetType: 'inline'
+          script: |
+            Write-Host "========================================"
+            Write-Host "Running smoke tests against ${{ parameters.baseUrl }}"
+            Write-Host "Environment: ${{ parameters.environmentName }}"
+            Write-Host "========================================"
+
+            $Failed = 0
+
+            # Test 1: Health endpoint
+            Write-Host ""
+            Write-Host "Test 1: Health endpoint (/health)"
+            try {
+                $response = Invoke-WebRequest -Uri "${{ parameters.baseUrl }}/health" -Method Get -TimeoutSec 30 -UseBasicParsing
+                if ($response.StatusCode -eq 200) {
+                    Write-Host "  [PASS] Health endpoint returned HTTP 200"
+                } else {
+                    Write-Host "  [FAIL] Health endpoint returned HTTP $($response.StatusCode)"
+                    $Failed = 1
+                }
+            } catch {
+                Write-Host "  [FAIL] Health endpoint failed: $($_.Exception.Message)"
+                $Failed = 1
+            }
+
+            # Test 2: API Swagger endpoint (may be disabled in production)
+            Write-Host ""
+            Write-Host "Test 2: API availability (/swagger)"
+            try {
+                $response = Invoke-WebRequest -Uri "${{ parameters.baseUrl }}/swagger/index.html" -Method Get -TimeoutSec 30 -UseBasicParsing
+                if ($response.StatusCode -eq 200) {
+                    Write-Host "  [PASS] Swagger UI available (HTTP 200)"
+                } else {
+                    Write-Host "  [INFO] Swagger UI returned HTTP $($response.StatusCode)"
+                }
+            } catch {
+                Write-Host "  [INFO] Swagger UI not available - may be disabled in production"
+            }
+
+            # Test 3: Static files (React app - index.html)
+            Write-Host ""
+            Write-Host "Test 3: Static files (index.html)"
+            try {
+                $response = Invoke-WebRequest -Uri "${{ parameters.baseUrl }}/" -Method Get -TimeoutSec 30 -UseBasicParsing
+                if ($response.StatusCode -eq 200) {
+                    Write-Host "  [PASS] Static files served correctly (HTTP 200)"
+                } else {
+                    Write-Host "  [FAIL] Static files not served correctly (HTTP $($response.StatusCode))"
+                    $Failed = 1
+                }
+            } catch {
+                Write-Host "  [FAIL] Static files request failed: $($_.Exception.Message)"
+                $Failed = 1
+            }
+
+            # Test 4: Check for React app root element
+            Write-Host ""
+            Write-Host "Test 4: React app loaded (checking for 'root' element)"
+            try {
+                $response = Invoke-WebRequest -Uri "${{ parameters.baseUrl }}/" -Method Get -TimeoutSec 30 -UseBasicParsing
+                if ($response.Content -match "root") {
+                    Write-Host "  [PASS] React app root element found"
+                } else {
+                    Write-Host "  [FAIL] React app root element not found in response"
+                    $Failed = 1
+                }
+            } catch {
+                Write-Host "  [FAIL] React app check failed: $($_.Exception.Message)"
+                $Failed = 1
+            }
+
+            # Test 5: Health-UI endpoint
+            Write-Host ""
+            Write-Host "Test 5: Health UI endpoint (/health-ui)"
+            try {
+                $response = Invoke-WebRequest -Uri "${{ parameters.baseUrl }}/health-ui" -Method Get -TimeoutSec 30 -UseBasicParsing
+                if ($response.StatusCode -eq 200) {
+                    Write-Host "  [PASS] Health UI available (HTTP 200)"
+                } else {
+                    Write-Host "  [INFO] Health UI returned HTTP $($response.StatusCode)"
+                }
+            } catch {
+                Write-Host "  [INFO] Health UI not available: $($_.Exception.Message)"
+            }
+
+            Write-Host ""
+            Write-Host "========================================"
+            if ($Failed -eq 0) {
+                Write-Host "All critical smoke tests passed!"
+                exit 0
+            } else {
+                Write-Host "Some smoke tests failed!"
+                exit 1
+            }
