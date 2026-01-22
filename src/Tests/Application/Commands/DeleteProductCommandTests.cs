@@ -59,10 +59,9 @@ public class DeleteProductCommandTests
         // Assert
         existingProduct.DomainEvents.Should().Contain(x => x is ProductDeletedEvent);
 
-        existingProduct.DomainEvents.First().Should().BeOfType<ProductDeletedEvent>();
-
-        var domainEvent = existingProduct.DomainEvents.First() as ProductDeletedEvent;
-        domainEvent!.Item.Should().Be(existingProduct);
+        var deletedEvent = existingProduct.DomainEvents.OfType<ProductDeletedEvent>().FirstOrDefault();
+        deletedEvent.Should().NotBeNull();
+        deletedEvent!.Item.Should().Be(existingProduct);
     }
 
     [Fact]

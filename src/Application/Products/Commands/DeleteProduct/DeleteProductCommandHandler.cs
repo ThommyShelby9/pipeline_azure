@@ -24,7 +24,7 @@ public class DeleteProductCommandHandler : IRequestHandler<DeleteProductCommand>
             EntityStatus.Deleted
         );
 
-        entity.RemoveDomainEvent(new ProductDeletedEvent(entity));
+        entity.AddDomainEvent(new ProductDeletedEvent(entity));
 
         await _context.SaveChangesAsync(cancellationToken);
     }

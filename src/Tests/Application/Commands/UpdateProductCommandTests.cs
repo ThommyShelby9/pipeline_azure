@@ -45,8 +45,8 @@ public class UpdateProductCommandTests
             "New Title",
             20m,
             "New Description",
-            "new",
-            _faker.Image.PicsumUrl() // geçerli URL
+            _faker.Image.PicsumUrl(), // Image
+            "new" // Category
         );
 
         // Act

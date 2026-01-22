@@ -482,13 +482,15 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         var product = Product.Create("Product", 10m, "Desc", "Cat", "https://img.jpg");
         await _repository.AddAsync(product);
 
-        // Act
+        // Act - Make a change and save
+        product.UpdatePrice(20m);
         var result = await _context.SaveChangesAsync();
 
         // Assert
         result.Should().BeGreaterThan(0);
         var retrieved = await _repository.GetByIdAsync(product.Id);
         retrieved.Should().NotBeNull();
+        retrieved!.Price.Should().Be(20m);
     }
 
     [Fact]

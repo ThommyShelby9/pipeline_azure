@@ -7,7 +7,7 @@ namespace ShoppingProject.Domain.Entities;
 /// Outbox pattern entity for reliable message delivery
 /// Ensures that domain events are persisted and published reliably
 /// </summary>
-public class OutboxMessage : BaseEntity
+public sealed class OutboxMessage : BaseEntity
 {
     public string Type { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;

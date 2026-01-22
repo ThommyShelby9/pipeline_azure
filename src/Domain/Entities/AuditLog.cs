@@ -1,6 +1,6 @@
 namespace ShoppingProject.Domain.Entities;
 
-public class AuditLog : BaseEntity
+public sealed class AuditLog : BaseEntity
 {
     public string? UserId { get; set; }
     public string? UserEmail { get; set; }

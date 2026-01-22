@@ -2,7 +2,7 @@ using ShoppingProject.Domain.ValueObjects;
 
 namespace ShoppingProject.Domain.Entities
 {
-    public class Product : BaseAuditableEntity
+    public sealed class Product : BaseAuditableEntity
     {
         public string Title { get; private set; } = string.Empty;
         public decimal Price { get; private set; }

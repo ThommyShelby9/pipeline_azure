@@ -4,7 +4,7 @@ namespace ShoppingProject.Domain.Entities;
 /// Feature flag entity for controlling feature rollouts
 /// Supports percentage-based rollouts and user targeting
 /// </summary>
-public class FeatureFlag : BaseEntity
+public sealed class FeatureFlag : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
