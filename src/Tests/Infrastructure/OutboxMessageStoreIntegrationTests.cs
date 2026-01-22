@@ -209,11 +209,12 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
         var message = await _outboxStore.AddEventAsync(product.DomainEvents.First());
 
         // Mark as failed (sets future retry time)
+        // Using UtcNow (not past time) so NextRetryUtc will be in the future
         await _outboxStore.MarkAsFailedAsync(
             message.Id,
             "Error",
-            DateTimeOffset.UtcNow.AddHours(-1)
-        ); // Failed 1 hour ago
+            DateTimeOffset.UtcNow
+        );
 
         // Act
         var unprocessed = await _outboxStore.GetUnprocessedMessagesAsync();

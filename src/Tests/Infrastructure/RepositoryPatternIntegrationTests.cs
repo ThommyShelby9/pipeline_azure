@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using ShoppingProject.Application.Common.Specifications;
 using ShoppingProject.Application.Products.Specifications;
 using ShoppingProject.Domain.Entities;
+using ShoppingProject.Domain.Enums;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Repositories;
 using Xunit;
@@ -147,9 +148,9 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _repository.AddAsync(
             Product.Create("Active 1", 10m, "Desc", "Cat", "https://img1.jpg")
         );
-        await _repository.AddAsync(
-            Product.Create("Inactive", 0m, "Desc", "Cat", "https://img2.jpg")
-        );
+        var inactiveProduct = Product.Create("Inactive", 0m, "Desc", "Cat", "https://img2.jpg");
+        inactiveProduct.UpdateStatus(EntityStatus.Deleted);
+        await _repository.AddAsync(inactiveProduct);
         await _repository.AddAsync(
             Product.Create("Active 2", 20m, "Desc", "Cat", "https://img3.jpg")
         );
