@@ -33,8 +33,9 @@ jobs:
         inputs:
           command: 'test'
           projects: '**/*Tests.csproj'
+          arguments: '--configuration ${{ parameters.buildConfiguration }} --no-build'
           publishTestResults: true
-          arguments: '--configuration ${{ parameters.buildConfiguration }} --no-build --collect "XPlat Code Coverage" --results-directory $(Build.SourcesDirectory)/TestResults'
+          testRunTitle: 'ShoppingProject Tests'
 
       - task: PublishCodeCoverageResults@2
         displayName: 'Publish code coverage'
