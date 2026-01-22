@@ -13,15 +13,16 @@ using ShoppingProject.Application.DTOs;
 using ShoppingProject.Domain.Entities;
 using ShoppingProject.Infrastructure.Bus.Events;
 using ShoppingProject.Infrastructure.Data;
+using ShoppingProject.Tests.Infrastructure;
 
 namespace ShoppingProject.UnitTests.IntegrationTests;
 
-public class AuditIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
 {
-    private readonly WebApplicationFactory<Program> _factory;
+    private readonly CustomWebApplicationFactory _factory;
     private readonly Faker _faker = new();
 
-    public AuditIntegrationTests(WebApplicationFactory<Program> factory)
+    public AuditIntegrationTests(CustomWebApplicationFactory factory)
     {
         _factory = factory;
     }

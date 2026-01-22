@@ -1,16 +1,17 @@
 ﻿using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
+using ShoppingProject.Tests.Infrastructure;
 using Bogus;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {
-    public class IdentityIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    public class IdentityIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
         private readonly Faker _faker;
 
-        public IdentityIntegrationTests(WebApplicationFactory<Program> factory)
+        public IdentityIntegrationTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
             _faker = new Faker();

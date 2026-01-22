@@ -5,15 +5,16 @@ using Bogus;
 using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
 using ShoppingProject.Application.DTOs;
+using ShoppingProject.Tests.Infrastructure;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {
-    public class ProductsIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    public class ProductsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
         private readonly Faker _faker;
 
-        public ProductsIntegrationTests(WebApplicationFactory<Program> factory)
+        public ProductsIntegrationTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
             _faker = new Faker();

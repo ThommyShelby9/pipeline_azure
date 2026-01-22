@@ -4,14 +4,15 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
 using ShoppingProject.Application.DTOs;
+using ShoppingProject.Tests.Infrastructure;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {
-    public class CartsIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    public class CartsIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public CartsIntegrationTests(WebApplicationFactory<Program> factory)
+        public CartsIntegrationTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
         }

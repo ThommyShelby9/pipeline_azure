@@ -3,14 +3,15 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
+using ShoppingProject.Tests.Infrastructure;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {
-    public class CacheIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+    public class CacheIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     {
         private readonly HttpClient _client;
 
-        public CacheIntegrationTests(WebApplicationFactory<Program> factory)
+        public CacheIntegrationTests(CustomWebApplicationFactory factory)
         {
             _client = factory.CreateClient();
         }
