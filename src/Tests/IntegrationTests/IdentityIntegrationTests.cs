@@ -24,7 +24,14 @@ namespace ShoppingProject.UnitTests.IntegrationTests
 
             var registerResponse = await _client.PostAsJsonAsync(
                 "/api/v1/identity/register",
-                new { Email = email, Password = "Test123!" }
+                new
+                {
+                    Email = email,
+                    Password = "Test123!",
+                    FirstName = _faker.Name.FirstName(),
+                    LastName = _faker.Name.LastName(),
+                    Gender = "Male"
+                }
             );
             registerResponse.EnsureSuccessStatusCode();
 
@@ -55,6 +62,9 @@ namespace ShoppingProject.UnitTests.IntegrationTests
                 ServiceResult<AuthResponse>
             >();
             Assert.NotNull(authResult?.Data);
+
+            // Wait 1 second to ensure token timestamp changes
+            await Task.Delay(1000);
 
             var refreshResponse = await _client.PostAsJsonAsync(
                 "/api/v1/identity/refresh-token",
@@ -111,7 +121,7 @@ namespace ShoppingProject.UnitTests.IntegrationTests
         {
             var loginResponse = await _client.PostAsJsonAsync(
                 "/api/v1/identity/login",
-                new { Email = "testuser@example.com", Password = "Test123!" }
+                new { Email = "user@test.com", Password = "User123!" }
             );
             loginResponse.EnsureSuccessStatusCode();
 

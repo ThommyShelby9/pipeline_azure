@@ -7,7 +7,6 @@ using ShoppingProject.Domain.Entities;
 using ShoppingProject.Domain.Events;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Services;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace ShoppingProject.Tests.Infrastructure;
@@ -16,42 +15,29 @@ namespace ShoppingProject.Tests.Infrastructure;
 /// Integration tests for OutboxMessageStore.
 /// Tests reliable event publishing, retry logic, dead-letter handling, and cleanup.
 /// </summary>
-[Collection("PostgreSQL Tests")]
 public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container;
     private ApplicationDbContext _context = null!;
     private IOutboxMessageStore _outboxStore = null!;
     private IClock _clock = null!;
+    private readonly string _databaseName = Guid.NewGuid().ToString();
 
-    public OutboxMessageStoreIntegrationTests()
+    public Task InitializeAsync()
     {
-        _container = new PostgreSqlBuilder()
-            .WithDatabase("testdb_outbox")
-            .WithUsername("testuser")
-            .WithPassword("testpass")
-            .Build();
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(_container.GetConnectionString())
+            .UseInMemoryDatabase(_databaseName)
             .Options;
 
         _context = new ApplicationDbContext(options);
-        await _context.Database.EnsureCreatedAsync();
-
         _clock = new SystemClock();
         _outboxStore = new OutboxMessageStore(_context, _clock, new TestLogger());
+
+        return Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
     {
         await _context.DisposeAsync();
-        await _container.StopAsync();
     }
 
     [Fact]

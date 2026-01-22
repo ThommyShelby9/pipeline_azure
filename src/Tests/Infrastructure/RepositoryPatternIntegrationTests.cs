@@ -5,7 +5,6 @@ using ShoppingProject.Application.Products.Specifications;
 using ShoppingProject.Domain.Entities;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Repositories;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace ShoppingProject.Tests.Infrastructure;
@@ -14,40 +13,27 @@ namespace ShoppingProject.Tests.Infrastructure;
 /// Integration tests for Repository pattern.
 /// Tests CRUD operations, Specification support, and query capabilities.
 /// </summary>
-[Collection("PostgreSQL Tests")]
 public class RepositoryPatternIntegrationTests : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container;
     private ApplicationDbContext _context = null!;
     private Repository<Product> _repository = null!;
+    private readonly string _databaseName = Guid.NewGuid().ToString();
 
-    public RepositoryPatternIntegrationTests()
+    public Task InitializeAsync()
     {
-        _container = new PostgreSqlBuilder()
-            .WithDatabase("testdb_repository")
-            .WithUsername("testuser")
-            .WithPassword("testpass")
-            .Build();
-    }
-
-    public async Task InitializeAsync()
-    {
-        await _container.StartAsync();
-
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(_container.GetConnectionString())
+            .UseInMemoryDatabase(_databaseName)
             .Options;
 
         _context = new ApplicationDbContext(options);
-        await _context.Database.EnsureCreatedAsync();
-
         _repository = new Repository<Product>(_context);
+
+        return Task.CompletedTask;
     }
 
     public async Task DisposeAsync()
     {
         await _context.DisposeAsync();
-        await _container.StopAsync();
     }
 
     [Fact]

@@ -5,48 +5,33 @@ using ShoppingProject.Application.Products.Specifications;
 using ShoppingProject.Domain.Entities;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Repositories;
-using Testcontainers.PostgreSql;
 using Xunit;
 
 namespace ShoppingProject.Tests.Infrastructure;
 
 /// <summary>
-/// Integration tests for the Specification pattern using Testcontainers.PostgreSQL.
-/// Tests database queries with real PostgreSQL instance.
+/// Integration tests for the Specification pattern.
+/// Tests database queries with InMemory database.
 /// Covers filtering, ordering, pagination, search, and eager loading.
 /// </summary>
-[Collection("PostgreSQL Tests")]
 public class SpecificationPatternIntegrationTests : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container;
     private ApplicationDbContext _context = null!;
-
-    public SpecificationPatternIntegrationTests()
-    {
-        _container = new PostgreSqlBuilder()
-            .WithDatabase("testdb")
-            .WithUsername("testuser")
-            .WithPassword("testpass")
-            .Build();
-    }
+    private readonly string _databaseName = Guid.NewGuid().ToString();
 
     public async Task InitializeAsync()
     {
-        await _container.StartAsync();
-
         var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-            .UseNpgsql(_container.GetConnectionString())
+            .UseInMemoryDatabase(_databaseName)
             .Options;
 
         _context = new ApplicationDbContext(options);
-        await _context.Database.EnsureCreatedAsync();
         await SeedTestDataAsync();
     }
 
     public async Task DisposeAsync()
     {
         await _context.DisposeAsync();
-        await _container.StopAsync();
     }
 
     private async Task SeedTestDataAsync()
