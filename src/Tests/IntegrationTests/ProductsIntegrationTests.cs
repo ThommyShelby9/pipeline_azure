@@ -85,13 +85,14 @@ namespace ShoppingProject.UnitTests.IntegrationTests
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadFromJsonAsync<
-                ServiceResult<List<ProductDto>>
+                ServiceResult<ShoppingProject.Domain.Common.Paginate<ProductDto>>
             >();
 
             Assert.True(response.StatusCode == System.Net.HttpStatusCode.OK);
             Assert.NotNull(result);
             Assert.True(result!.IsSuccess);
-            Assert.True(result.Data!.Count <= 5);
+            Assert.NotNull(result.Data);
+            Assert.True(result.Data!.Items.Count <= 5);
         }
 
         [Fact]
