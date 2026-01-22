@@ -102,13 +102,22 @@ jobs:
 
       - script: |
           echo "Running npm audit..."
-          npm audit --audit-level=moderate --json > $(Build.ArtifactStagingDirectory)/npm-audit.json || true
 
-          # Run audit and capture exit code
-          npm audit --audit-level=moderate
-          AUDIT_EXIT_CODE=$?
+          # Ensure staging directory exists
+          mkdir -p $(Build.ArtifactStagingDirectory)
 
-          if [ $AUDIT_EXIT_CODE -gt 0 ]; then
+          # Run npm audit and capture output to JSON file
+          npm audit --audit-level=moderate --json > $(Build.ArtifactStagingDirectory)/npm-audit.json 2>&1 || true
+
+          # Verify file was created
+          if [ ! -f "$(Build.ArtifactStagingDirectory)/npm-audit.json" ]; then
+            echo '{"error": "npm audit failed to generate report"}' > $(Build.ArtifactStagingDirectory)/npm-audit.json
+          fi
+
+          # Run audit again to show results in console and capture exit code
+          npm audit --audit-level=moderate || AUDIT_EXIT_CODE=$?
+
+          if [ "${AUDIT_EXIT_CODE:-0}" -gt 0 ]; then
             echo "##vso[task.logissue type=warning]npm audit found vulnerabilities (exit code: $AUDIT_EXIT_CODE)"
           else
             echo "No vulnerabilities found"
