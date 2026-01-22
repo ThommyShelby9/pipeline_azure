@@ -22,6 +22,8 @@ namespace ShoppingProject.Tests.Infrastructure;
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
+    private readonly string _dbName = Guid.NewGuid().ToString();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.ConfigureAppConfiguration((context, config) =>
@@ -36,9 +38,9 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 ["RabbitMq:Username"] = "guest",
                 ["RabbitMq:Password"] = "guest",
                 ["KeyVault:Name"] = "", // Disable KeyVault for tests
-                ["Jwt:Key"] = "test-jwt-key-for-integration-tests-must-be-long-enough",
-                ["Jwt:Issuer"] = "test-issuer",
-                ["Jwt:Audience"] = "test-audience"
+                ["JwtSettings:Secret"] = "test-jwt-secret-key-for-integration-tests-minimum-32-characters-required",
+                ["JwtSettings:Issuer"] = "test-issuer",
+                ["JwtSettings:Audience"] = "test-audience"
             });
         });
 
@@ -58,13 +60,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseInMemoryDatabase("TestDb");
+                options.UseInMemoryDatabase(_dbName);
             });
 
             services.RemoveAll<DbContextOptions<AuditDbContext>>();
             services.AddDbContext<AuditDbContext>(options =>
             {
-                options.UseInMemoryDatabase("AuditTestDb");
+                options.UseInMemoryDatabase($"{_dbName}_Audit");
             });
 
             // Remove background services that depend on external services
