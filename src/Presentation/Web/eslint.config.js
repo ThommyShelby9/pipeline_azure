@@ -31,7 +31,6 @@ export default tseslint.config(
       // Custom rules for better code quality
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/prefer-const': 'error',
       'react/prop-types': 'off', // Using TypeScript for props validation
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'prefer-const': 'error',
