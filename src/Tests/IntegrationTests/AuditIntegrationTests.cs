@@ -42,6 +42,11 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         _output.WriteLine("[Arrange] Getting MassTransit test harness");
         var harness = _factory.Services.GetRequiredService<ITestHarness>();
 
+        // Ensure harness is started
+        _output.WriteLine("[Arrange] Starting test harness");
+        await harness.Start();
+        _output.WriteLine("[Arrange] Test harness started successfully");
+
         // Login as admin
         _output.WriteLine("[Act] Logging in as admin@test.com");
         var loginResponse = await client.PostAsJsonAsync(
@@ -87,13 +92,28 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         createResponse.EnsureSuccessStatusCode();
         _output.WriteLine("[Act] Product created successfully");
 
-        // Wait for the outbox processor and MassTransit to process the message
-        _output.WriteLine("[Act] Waiting 2 seconds for message processing");
-        await Task.Delay(2000);
+        // Wait for the outbox processor and MassTransit to process the message with retry mechanism
+        _output.WriteLine("[Act] Waiting for message processing with retry mechanism");
+        var published = false;
+        var maxRetries = 10;
+        var retryDelay = TimeSpan.FromSeconds(1);
+
+        for (int i = 0; i < maxRetries; i++)
+        {
+            await Task.Delay(retryDelay);
+            published = await harness.Published.Any<IAuditEvent>(x => x.Context.Message.EntityName == "Product");
+
+            if (published)
+            {
+                _output.WriteLine($"[Act] Message published after {(i + 1) * retryDelay.TotalSeconds} seconds");
+                break;
+            }
+
+            _output.WriteLine($"[Act] Retry {i + 1}/{maxRetries} - Message not yet published");
+        }
 
         // Wait for the audit event to be published
         _output.WriteLine("[Assert] Checking if IAuditEvent was published");
-        var published = await harness.Published.Any<IAuditEvent>(x => x.Context.Message.EntityName == "Product");
         _output.WriteLine($"[Assert] IAuditEvent published: {published}");
 
         if (!published)
@@ -105,6 +125,9 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
             {
                 _output.WriteLine($"[Debug] - Message type: {msg.MessageType}");
             }
+
+            _output.WriteLine("[Debug] Checking harness status:");
+            _output.WriteLine($"[Debug] Bus is available: {harness.Bus != null}");
         }
 
         Assert.True(published);
