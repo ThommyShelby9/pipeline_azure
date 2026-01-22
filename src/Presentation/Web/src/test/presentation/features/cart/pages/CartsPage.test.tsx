@@ -19,10 +19,11 @@ describe('CartsPage', () => {
   it('renders empty cart state with i18n texts', () => {
     renderWithProviders(<CartsPage />);
 
-    expect(screen.getByText(/sepetiniz boş/i)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /alışverişe başla/i })).toBeInTheDocument();
+    // Default language is English, so check for English text
+    expect(screen.getByText(/your cart is empty/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /start shopping/i })).toBeInTheDocument();
     expect(
-      screen.getByRole('link', { name: /alışverişe devam et/i })
+      screen.getByRole('link', { name: /browse categories/i })
     ).toBeInTheDocument();
   });
 });

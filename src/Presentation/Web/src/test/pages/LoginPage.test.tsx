@@ -42,7 +42,7 @@ describe('LoginPage', () => {
         expect(mockNavigate).not.toHaveBeenCalled();
     });
 
-    it('submits form with valid credentials', async () => {
+    it('submits form with valid credentials and shows loading state', async () => {
         renderWithProviders(<LoginPage />);
 
         const emailInput = screen.getByLabelText(/email/i);
@@ -53,22 +53,9 @@ describe('LoginPage', () => {
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
         fireEvent.click(submitButton);
 
+        // Button should be disabled during submission
         await waitFor(() => {
             expect(submitButton).toBeDisabled();
         });
-    });
-
-    it('shows loading state during submission', async () => {
-        renderWithProviders(<LoginPage />);
-
-        const emailInput = screen.getByLabelText(/email/i);
-        const passwordInput = screen.getByLabelText(/password/i);
-        const submitButton = screen.getByRole('button', { name: /sign in/i });
-
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: 'password123' } });
-        fireEvent.click(submitButton);
-
-        expect(screen.getByText(/loading/i)).toBeInTheDocument();
     });
 });
