@@ -6,6 +6,7 @@ using ShoppingProject.Domain.Entities;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Repositories;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ShoppingProject.Tests.Infrastructure;
 

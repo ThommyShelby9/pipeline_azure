@@ -8,6 +8,7 @@ using ShoppingProject.Domain.Events;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Services;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace ShoppingProject.Tests.Infrastructure;
 

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
 using ShoppingProject.Tests.Infrastructure;
 using Bogus;
+using Xunit.Abstractions;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {

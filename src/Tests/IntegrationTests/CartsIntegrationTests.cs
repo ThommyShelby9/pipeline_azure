@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using ShoppingProject.Application.Common.Models;
 using ShoppingProject.Application.DTOs;
 using ShoppingProject.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace ShoppingProject.UnitTests.IntegrationTests
 {

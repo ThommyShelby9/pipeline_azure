@@ -14,6 +14,7 @@ using ShoppingProject.Domain.Entities;
 using ShoppingProject.Infrastructure.Bus.Events;
 using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Tests.Infrastructure;
+using Xunit.Abstractions;
 
 namespace ShoppingProject.UnitTests.IntegrationTests;
 
