@@ -48,8 +48,10 @@ namespace ShoppingProject.UnitTests.IntegrationTests
             var getResponse = await _client.GetAsync("/api/v1/cache/test-key");
             getResponse.EnsureSuccessStatusCode();
 
-            var value = await getResponse.Content.ReadAsStringAsync();
-            Assert.Equal("\"test-value\"", value);
+            var result = await getResponse.Content.ReadFromJsonAsync<ServiceResult<string>>();
+            Assert.NotNull(result);
+            Assert.True(result.IsSuccess);
+            Assert.Equal("test-value", result.Data);
         }
 
         [Fact]
@@ -65,8 +67,10 @@ namespace ShoppingProject.UnitTests.IntegrationTests
             var response = await _client.GetAsync("/api/v1/cache/test-key");
             response.EnsureSuccessStatusCode();
 
-            var value = await response.Content.ReadAsStringAsync();
-            Assert.Equal("\"test-value\"", value);
+            var result = await response.Content.ReadFromJsonAsync<ServiceResult<string>>();
+            Assert.NotNull(result);
+            Assert.True(result.IsSuccess);
+            Assert.Equal("test-value", result.Data);
         }
 
         [Fact]
@@ -75,7 +79,12 @@ namespace ShoppingProject.UnitTests.IntegrationTests
             await AuthenticateAsync();
 
             var response = await _client.GetAsync("/api/v1/cache/non-existent-key");
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            response.EnsureSuccessStatusCode(); // HTTP 200 OK
+
+            var result = await response.Content.ReadFromJsonAsync<ServiceResult<string>>();
+            Assert.NotNull(result);
+            Assert.False(result.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         }
 
         [Fact]
@@ -92,7 +101,12 @@ namespace ShoppingProject.UnitTests.IntegrationTests
             response.EnsureSuccessStatusCode();
 
             var getResponse = await _client.GetAsync("/api/v1/cache/delete-key");
-            Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+            getResponse.EnsureSuccessStatusCode(); // HTTP 200 OK
+
+            var result = await getResponse.Content.ReadFromJsonAsync<ServiceResult<string>>();
+            Assert.NotNull(result);
+            Assert.False(result.IsSuccess);
+            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
         }
     }
 }
