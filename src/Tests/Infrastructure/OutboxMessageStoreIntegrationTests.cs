@@ -178,7 +178,6 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
 
         // Store first failure values before they get updated
         var firstRetryTime = after1stFailure.NextRetryUtc;
-        var firstRetryCount = after1stFailure.RetryCount;
 
         // Act - second failure
         _output.WriteLine("[Act] Marking message as failed (2nd attempt)");
