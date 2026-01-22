@@ -30,37 +30,10 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
     [Fact]
     public async Task SaveEntity_Should_Publish_IAuditEvent()
     {
-        // Arrange
-        var factory = _factory.WithWebHostBuilder(builder =>
-        {
-            builder.ConfigureAppConfiguration(
-                (context, config) =>
-                {
-                    config.AddInMemoryCollection(
-                        new Dictionary<string, string?>
-                        {
-                            {
-                                "ConnectionStrings:AuditConnection",
-                                "Host=localhost;Database=AuditDb;Username=postgres;Password=postgres"
-                            },
-                        }
-                    );
-                }
-            );
-            builder.ConfigureServices(services =>
-            {
-                services.AddMassTransitTestHarness();
-            });
-        });
+        // Arrange - Use default factory which already has InMemory database configured
+        var client = _factory.CreateClient();
 
-        var client = factory.CreateClient();
-        using (var scope = factory.Services.CreateScope())
-        {
-            var initialiser = scope.ServiceProvider.GetRequiredService<ApplicationDbContextInitialiser>();
-            await initialiser.InitialiseAsync();
-        }
-        
-        var harness = factory.Services.GetRequiredService<ITestHarness>();
+        var harness = _factory.Services.GetRequiredService<ITestHarness>();
 
         // Login as admin
         var loginResponse = await client.PostAsJsonAsync(
@@ -105,7 +78,7 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         );
 
         // Verify database persistence
-        using (var scope = factory.Services.CreateScope())
+        using (var scope = _factory.Services.CreateScope())
         {
             var auditContext = scope.ServiceProvider.GetRequiredService<IAuditDbContext>();
             var auditLog = await ((AuditDbContext)auditContext).AuditLogs

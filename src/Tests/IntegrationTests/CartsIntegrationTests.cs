@@ -84,8 +84,10 @@ namespace ShoppingProject.UnitTests.IntegrationTests
 
             response.EnsureSuccessStatusCode();
 
-            var createdCart = await response.Content.ReadFromJsonAsync<CartDto>();
-            Assert.NotNull(createdCart);
+            var result = await response.Content.ReadFromJsonAsync<ServiceResult<int>>();
+            Assert.NotNull(result);
+            Assert.True(result!.IsSuccess);
+            Assert.True(result.Data > 0);
         }
 
         [Fact]
