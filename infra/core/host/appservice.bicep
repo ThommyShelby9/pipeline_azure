@@ -9,6 +9,7 @@ param appServicePlanId string
 param keyVaultName string = ''
 param managedIdentity bool = !empty(keyVaultName)
 param logAnalyticsWorkspaceId string = ''
+param deploymentSuffix string = utcNow()
 
 // Runtime Properties
 @allowed([
@@ -133,7 +134,7 @@ resource webAppDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 // Updates to the single Microsoft.sites/web/config resources that need to be performed sequentially
 // sites/web/config 'appsettings'
 module configAppSettings 'appservice-appsettings.bicep' = {
-  name: '${name}-appSettings'
+  name: '${name}-appSettings-${deploymentSuffix}'
   params: {
     name: appService.name
     appSettings: union(appSettings,

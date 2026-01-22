@@ -4,9 +4,10 @@ param applicationInsightsName string
 param applicationInsightsDashboardName string = ''
 param location string = resourceGroup().location
 param tags object = {}
+param deploymentSuffix string = utcNow()
 
 module logAnalytics 'loganalytics.bicep' = {
-  name: 'loganalytics'
+  name: 'loganalytics-${deploymentSuffix}'
   params: {
     name: logAnalyticsName
     location: location
@@ -15,13 +16,14 @@ module logAnalytics 'loganalytics.bicep' = {
 }
 
 module applicationInsights 'applicationinsights.bicep' = {
-  name: 'applicationinsights'
+  name: 'applicationinsights-${deploymentSuffix}'
   params: {
     name: applicationInsightsName
     location: location
     tags: tags
     dashboardName: applicationInsightsDashboardName
     logAnalyticsWorkspaceId: logAnalytics.outputs.id
+    deploymentSuffix: deploymentSuffix
   }
 }
 

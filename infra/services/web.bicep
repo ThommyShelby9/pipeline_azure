@@ -5,10 +5,11 @@ param tags object = {}
 param serviceName string = 'web'
 param applicationInsightsName string = ''
 param keyVaultName string = ''
+param deploymentSuffix string = utcNow()
 
 // App Service Plan - S1 required for deployment slots
 module appServicePlan '../core/host/appserviceplan.bicep' = {
-  name: 'appServicePlan'
+  name: 'appServicePlan-${deploymentSuffix}'
   params: {
     name: '${name}-plan'
     location: location
@@ -23,7 +24,7 @@ module appServicePlan '../core/host/appserviceplan.bicep' = {
 
 // Production App Service
 module appService '../core/host/appservice.bicep' = {
-  name: 'appService'
+  name: 'appService-${deploymentSuffix}'
   params: {
     name: name
     location: location
@@ -37,12 +38,13 @@ module appService '../core/host/appservice.bicep' = {
     appSettings: {
       ASPNETCORE_ENVIRONMENT: 'Production'
     }
+    deploymentSuffix: deploymentSuffix
   }
 }
 
 // Staging Slot for Blue-Green deployment
 module stagingSlot '../core/host/appservice-slot.bicep' = {
-  name: 'stagingSlot'
+  name: 'stagingSlot-${deploymentSuffix}'
   params: {
     name: 'staging'
     location: location

@@ -32,6 +32,9 @@ param dbAdminPassword string
 @secure()
 param dbAppUserPassword string
 
+@description('Unique suffix to append to deployment names to avoid conflicts')
+param deploymentSuffix string = utcNow()
+
 var abbrs = loadJsonContent('./abbreviations.json')
 
 // Tags that should be applied to all resources.
@@ -63,19 +66,20 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 // Add resources to be provisioned below.
 
 module monitoring 'core/monitor/monitoring.bicep' = {
-  name: 'monitoring'
+  name: 'monitoring-${deploymentSuffix}'
   params: {
     location: location
     tags: tags
     logAnalyticsName: !empty(logAnalyticsName) ? logAnalyticsName : '${abbrs.operationalInsightsWorkspaces}${resourceToken}'
     applicationInsightsName: !empty(applicationInsightsName) ? applicationInsightsName : '${abbrs.insightsComponents}${resourceToken}'
     applicationInsightsDashboardName: !empty(applicationInsightsDashboardName) ? applicationInsightsDashboardName : '${abbrs.portalDashboards}${resourceToken}'
+    deploymentSuffix: deploymentSuffix
   }
   scope: rg
 }
 
 module keyVault 'core/security/keyvault.bicep' = {
-  name: 'keyvault'
+  name: 'keyvault-${deploymentSuffix}'
   params: {
     location: location
     tags: tags
@@ -86,7 +90,7 @@ module keyVault 'core/security/keyvault.bicep' = {
 }
 
 module web 'services/web.bicep' = {
-  name: 'web'
+  name: 'web-${deploymentSuffix}'
   params: {
     name: !empty(appServiceName) ? appServiceName : '${abbrs.webSitesAppService}${resourceToken}'
     location: location
@@ -94,13 +98,14 @@ module web 'services/web.bicep' = {
     serviceName: webServiceName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     keyVaultName: keyVault.outputs.name
+    deploymentSuffix: deploymentSuffix
   }
   scope: rg
 }
 
 
 module database 'core/database/sqlserver/sqlserver.bicep' = {
-  name: 'database'
+  name: 'database-${deploymentSuffix}'
   params: {
     name: !empty(dbServerName) ? dbServerName : '${abbrs.sqlServers}${resourceToken}'
     location: location
@@ -115,7 +120,7 @@ module database 'core/database/sqlserver/sqlserver.bicep' = {
 }
 
 module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
-  name: 'webKeyVaultAccess'
+  name: 'webKeyVaultAccess-${deploymentSuffix}'
   params: {
     keyVaultName: keyVault.outputs.name
     principalId: web.outputs.identityPrincipalId
@@ -125,7 +130,7 @@ module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
 
 // Key Vault access for staging slot
 module stagingSlotKeyVaultAccess 'core/security/keyvault-access.bicep' = {
-  name: 'stagingSlotKeyVaultAccess'
+  name: 'stagingSlotKeyVaultAccess-${deploymentSuffix}'
   params: {
     keyVaultName: keyVault.outputs.name
     principalId: web.outputs.stagingSlotIdentityPrincipalId

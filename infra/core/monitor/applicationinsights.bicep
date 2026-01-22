@@ -4,6 +4,7 @@ param dashboardName string = ''
 param location string = resourceGroup().location
 param tags object = {}
 param logAnalyticsWorkspaceId string
+param deploymentSuffix string = utcNow()
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   name: name
@@ -17,7 +18,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 module applicationInsightsDashboard 'applicationinsights-dashboard.bicep' = if (!empty(dashboardName)) {
-  name: 'application-insights-dashboard'
+  name: 'application-insights-dashboard-${deploymentSuffix}'
   params: {
     name: dashboardName
     location: location

@@ -44,10 +44,12 @@ jobs:
 
             # Generate unique deployment name using Build ID to avoid conflicts
             $deploymentName = "main-$(Build.BuildId)"
+            $deploymentSuffix = "$(Build.BuildId)"
 
             Write-Host "=========================================="
             Write-Host "Starting Bicep deployment..."
             Write-Host "Deployment Name: $deploymentName"
+            Write-Host "Deployment Suffix: $deploymentSuffix"
             Write-Host "Location: ${{ parameters.location }}"
             Write-Host "Resource Group: ${{ parameters.resourceGroup }}"
             Write-Host "Environment: ${{ parameters.environmentName }}"
@@ -63,6 +65,7 @@ jobs:
               --parameters principalId="${{ parameters.principalId }}" `
               --parameters dbAdminPassword="$dbAdminPwd" `
               --parameters dbAppUserPassword="$dbAppUserPwd" `
+              --parameters deploymentSuffix="$deploymentSuffix" `
               2>&1
 
             $exitCode = $LASTEXITCODE
