@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using ShoppingProject.Application.Common.Interfaces;
 using ShoppingProject.Domain.Entities;
@@ -50,6 +51,28 @@ namespace ShoppingProject.Infrastructure.Data
                 builder.Property(a => a.Action).HasMaxLength(50);
                 builder.Property(a => a.UserId).HasMaxLength(256);
                 builder.Property(a => a.UserEmail).HasMaxLength(256);
+            });
+
+            // Configure FeatureFlag for InMemory and PostgreSQL compatibility
+            builder.Entity<FeatureFlag>(entity =>
+            {
+                entity.HasKey(f => f.Id);
+
+                // Convert collections to JSON for storage
+                entity.Property(f => f.TargetedUserIds)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+
+                entity.Property(f => f.TargetedRoles)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new List<string>());
+
+                entity.Property(f => f.Metadata)
+                    .HasConversion(
+                        v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                        v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions?)null) ?? new Dictionary<string, string>());
             });
         }
     }

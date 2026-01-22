@@ -1,5 +1,6 @@
 using MassTransit;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using ShoppingProject.Domain.Constants;
 using ShoppingProject.Infrastructure.Data;
+using ShoppingProject.Infrastructure.Identity;
 
 namespace ShoppingProject.Tests.Infrastructure;
 
@@ -51,9 +54,18 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             services.RemoveAll(typeof(IDistributedCache));
             services.AddDistributedMemoryCache();
 
-            // Ensure databases use InMemory provider
-            services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
-            services.RemoveAll(typeof(DbContextOptions<AuditDbContext>));
+            // Replace DbContext with InMemory database explicitly
+            services.RemoveAll<DbContextOptions<ApplicationDbContext>>();
+            services.AddDbContext<ApplicationDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("TestDb");
+            });
+
+            services.RemoveAll<DbContextOptions<AuditDbContext>>();
+            services.AddDbContext<AuditDbContext>(options =>
+            {
+                options.UseInMemoryDatabase("AuditTestDb");
+            });
 
             // Remove background services that depend on external services
             var hostedServices = services
@@ -86,22 +98,82 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 var context = services.GetRequiredService<ApplicationDbContext>();
                 context.Database.EnsureCreated();
 
-                // Seed test data here if needed
-                SeedTestData(context);
+                // Seed Identity data for tests
+                SeedIdentityDataAsync(services).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
                 // Log or handle initialization errors
                 Console.WriteLine($"An error occurred seeding the test database: {ex.Message}");
+                Console.WriteLine($"Stack trace: {ex.StackTrace}");
+                throw; // Re-throw to see the error in test output
             }
         }
 
         return host;
     }
 
-    private static void SeedTestData(ApplicationDbContext context)
+    private static async Task SeedIdentityDataAsync(IServiceProvider services)
     {
-        // Add any test data seeding logic here
-        // For now, we'll let individual tests manage their own data
+        var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+        var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+
+        // Seed Roles
+        var roles = new[] { Roles.Administrator, Roles.Client };
+        foreach (var role in roles)
+        {
+            if (!await roleManager.RoleExistsAsync(role))
+            {
+                await roleManager.CreateAsync(new IdentityRole(role));
+            }
+        }
+
+        // Seed Admin User
+        var adminEmail = "admin@test.com";
+        var adminUser = await userManager.FindByEmailAsync(adminEmail);
+        if (adminUser == null)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = "admin",
+                Email = adminEmail,
+                EmailConfirmed = true,
+                FirstName = "Test",
+                LastName = "Admin",
+                Gender = "Male",
+                PhoneNumber = "+905551234567",
+                PhoneNumberConfirmed = true,
+            };
+
+            var result = await userManager.CreateAsync(user, "Admin123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, Roles.Administrator);
+            }
+        }
+
+        // Seed Client User
+        var clientEmail = "user@test.com";
+        var clientUser = await userManager.FindByEmailAsync(clientEmail);
+        if (clientUser == null)
+        {
+            var user = new ApplicationUser
+            {
+                UserName = "user",
+                Email = clientEmail,
+                EmailConfirmed = true,
+                FirstName = "Test",
+                LastName = "User",
+                Gender = "Male",
+                PhoneNumber = "+905559876543",
+                PhoneNumberConfirmed = true,
+            };
+
+            var result = await userManager.CreateAsync(user, "User123!");
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, Roles.Client);
+            }
+        }
     }
 }
