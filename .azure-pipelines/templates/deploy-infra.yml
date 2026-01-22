@@ -42,14 +42,19 @@ jobs:
               Write-Host "Generated app user password (length: $($dbAppUserPwd.Length))"
             }
 
+            # Generate unique deployment name using Build ID to avoid conflicts
+            $deploymentName = "main-$(Build.BuildId)"
+
             Write-Host "=========================================="
             Write-Host "Starting Bicep deployment..."
+            Write-Host "Deployment Name: $deploymentName"
             Write-Host "Location: ${{ parameters.location }}"
             Write-Host "Resource Group: ${{ parameters.resourceGroup }}"
             Write-Host "Environment: ${{ parameters.environmentName }}"
             Write-Host "=========================================="
 
             $deploymentResult = az deployment sub create `
+              --name "$deploymentName" `
               --location "${{ parameters.deploymentLocation }}" `
               --template-file "${{ parameters.bicepFile }}" `
               --parameters environmentName="${{ parameters.environmentName }}" `
@@ -69,7 +74,7 @@ jobs:
 
               # List deployment operations at subscription level
               Write-Host "`n--- Subscription-level deployment operations ---"
-              az deployment sub show --name main --query "properties.error" -o json 2>$null
+              az deployment sub show --name "$deploymentName" --query "properties.error" -o json 2>$null
 
               # List deployment operations for the resource group
               Write-Host "`n--- Resource Group deployment operations ---"
