@@ -176,6 +176,10 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
         var after1stFailure = await _outboxStore.GetByIdAsync(message.Id);
         _output.WriteLine($"[Act] After 1st failure - RetryCount: {after1stFailure!.RetryCount}, NextRetry: {after1stFailure.NextRetryUtc}");
 
+        // Store first failure values before they get updated
+        var firstRetryTime = after1stFailure.NextRetryUtc;
+        var firstRetryCount = after1stFailure.RetryCount;
+
         // Act - second failure
         _output.WriteLine("[Act] Marking message as failed (2nd attempt)");
         await _outboxStore.MarkAsFailedAsync(message.Id, "Error 2", utcNow);
@@ -183,7 +187,7 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
         _output.WriteLine($"[Act] After 2nd failure - RetryCount: {after2ndFailure!.RetryCount}, NextRetry: {after2ndFailure.NextRetryUtc}");
 
         // Assert - exponential backoff increases delay (2^1 = 2min, 2^2 = 4min)
-        var delay1 = (after1stFailure.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
+        var delay1 = (firstRetryTime - utcNow.DateTime)?.TotalMinutes ?? 0;
         var delay2 = (after2ndFailure.NextRetryUtc - utcNow.DateTime)?.TotalMinutes ?? 0;
         _output.WriteLine($"[Assert] Delay1: {delay1} minutes, Delay2: {delay2} minutes");
 

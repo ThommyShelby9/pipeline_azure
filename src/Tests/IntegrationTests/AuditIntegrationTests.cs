@@ -99,7 +99,7 @@ public class AuditIntegrationTests : IClassFixture<CustomWebApplicationFactory>
         if (!published)
         {
             _output.WriteLine("[Debug] Listing all published messages:");
-            var allPublished = harness.Published.Select().ToList();
+            var allPublished = harness.Published.Select<object>().ToList();
             _output.WriteLine($"[Debug] Total published messages: {allPublished.Count}");
             foreach (var msg in allPublished)
             {
