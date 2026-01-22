@@ -115,6 +115,7 @@ public static class DependencyInjection
 
         // Services
         builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+        builder.Services.AddSingleton<IRedisCacheService, RedisCacheServiceImplementation>();
         builder.Services.AddScoped<IFeatureFlagService, FeatureFlagService>();
         builder.Services.AddScoped<IEmailService, EmailService>();
         builder.Services.AddHostedService<OutboxProcessorService>();
