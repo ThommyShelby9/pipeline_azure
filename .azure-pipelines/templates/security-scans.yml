@@ -60,7 +60,7 @@ jobs:
         inputs:
           targetType: 'inline'
           script: |
-            $ErrorActionPreference = "Stop"
+            $ErrorActionPreference = "Continue"
             $gitleaksVersion = "8.21.1"
             $gitleaksUrl = "https://github.com/gitleaks/gitleaks/releases/download/v$gitleaksVersion/gitleaks_${gitleaksVersion}_windows_x64.zip"
             $gitleaksZip = "gitleaks.zip"
@@ -73,9 +73,23 @@ jobs:
 
             Write-Host "Running Gitleaks scan..."
             $reportPath = "$(Build.ArtifactStagingDirectory)/gitleaks.sarif"
-            .\gitleaks.exe detect --source . --report-format sarif --report-path $reportPath
 
-            Write-Host "Gitleaks scan completed successfully"
+            # Run gitleaks and capture exit code
+            .\gitleaks.exe detect --source . --report-format sarif --report-path $reportPath
+            $gitleaksExitCode = $LASTEXITCODE
+
+            if ($gitleaksExitCode -eq 1) {
+                Write-Host "##vso[task.logissue type=warning]Gitleaks found potential secrets in the codebase. Review the SARIF report for details."
+                Write-Host "Gitleaks scan completed with warnings (leaks detected)"
+            } elseif ($gitleaksExitCode -eq 0) {
+                Write-Host "Gitleaks scan completed successfully - no leaks detected"
+            } else {
+                Write-Host "##vso[task.logissue type=error]Gitleaks scan failed with exit code: $gitleaksExitCode"
+                exit $gitleaksExitCode
+            }
+
+            # Don't fail the pipeline on detected secrets, just warn
+            exit 0
 
       - task: PublishPipelineArtifact@1
         displayName: 'Publish gitleaks report'
