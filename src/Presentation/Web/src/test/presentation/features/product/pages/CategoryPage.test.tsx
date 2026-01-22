@@ -1,8 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { I18nextProvider } from 'react-i18next';
-import i18n from '@/i18n/config';
+import { renderWithProviders, screen } from '@/test/test-utils';
 import CategoryPage from '@/presentation/features/product/pages/CategoryPage';
 
 vi.mock('@/presentation/features/product/hooks/useProducts', () => ({
@@ -18,13 +15,7 @@ vi.mock('@/presentation/features/product/hooks/useProducts', () => ({
 
 describe('CategoryPage', () => {
   it('renders categories header and cards', () => {
-    render(
-      <BrowserRouter>
-        <I18nextProvider i18n={i18n}>
-          <CategoryPage />
-        </I18nextProvider>
-      </BrowserRouter>
-    );
+    renderWithProviders(<CategoryPage />);
 
     expect(screen.getByRole('heading', { name: /categories/i })).toBeInTheDocument();
     expect(screen.getByText(/electronics/i)).toBeInTheDocument();

@@ -1,6 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { renderWithProviders, screen, fireEvent, waitFor } from '@/test/test-utils';
 import { describe, it, expect, vi } from 'vitest';
-import { BrowserRouter } from 'react-router-dom';
 import LoginPage from '@/presentation/features/auth/pages/LoginPage';
 
 // Mock react-toastify
@@ -23,11 +22,7 @@ vi.mock('react-router-dom', async () => {
 
 describe('LoginPage', () => {
     it('renders login form', () => {
-        render(
-            <BrowserRouter>
-                <LoginPage />
-            </BrowserRouter>
-        );
+        renderWithProviders(<LoginPage />);
 
         expect(screen.getByRole('heading', { name: /sign in/i })).toBeInTheDocument();
         expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
@@ -35,11 +30,7 @@ describe('LoginPage', () => {
     });
 
     it('validates email field', async () => {
-        render(
-            <BrowserRouter>
-                <LoginPage />
-            </BrowserRouter>
-        );
+        renderWithProviders(<LoginPage />);
 
         const emailInput = screen.getByLabelText(/email/i);
         const submitButton = screen.getByRole('button', { name: /sign in/i });
@@ -52,11 +43,7 @@ describe('LoginPage', () => {
     });
 
     it('submits form with valid credentials', async () => {
-        render(
-            <BrowserRouter>
-                <LoginPage />
-            </BrowserRouter>
-        );
+        renderWithProviders(<LoginPage />);
 
         const emailInput = screen.getByLabelText(/email/i);
         const passwordInput = screen.getByLabelText(/password/i);
@@ -72,11 +59,7 @@ describe('LoginPage', () => {
     });
 
     it('shows loading state during submission', async () => {
-        render(
-            <BrowserRouter>
-                <LoginPage />
-            </BrowserRouter>
-        );
+        renderWithProviders(<LoginPage />);
 
         const emailInput = screen.getByLabelText(/email/i);
         const passwordInput = screen.getByLabelText(/password/i);
