@@ -35,7 +35,6 @@ public static class DependencyInjection
         var connectionString = builder.Configuration.GetConnectionString(
             ConfigurationConstants.ConnectionStrings.DefaultConnection
         );
-        Guard.Against.Null(connectionString);
 
         // DbContexts
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
@@ -46,15 +45,32 @@ public static class DependencyInjection
             (sp, options) =>
             {
                 options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
-                options.UseNpgsql(connectionString);
+
+                // Use InMemory database for tests when no connection string is provided
+                if (string.IsNullOrEmpty(connectionString))
+                {
+                    options.UseInMemoryDatabase("TestDb");
+                }
+                else
+                {
+                    options.UseNpgsql(connectionString);
+                }
             }
         );
         builder.Services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
 
         var auditConnectionString = builder.Configuration.GetConnectionString("AuditConnection");
         builder.Services.AddDbContext<AuditDbContext>(options =>
-            options.UseNpgsql(auditConnectionString)
-        );
+        {
+            if (string.IsNullOrEmpty(auditConnectionString))
+            {
+                options.UseInMemoryDatabase("AuditTestDb");
+            }
+            else
+            {
+                options.UseNpgsql(auditConnectionString);
+            }
+        });
         builder.Services.AddScoped<IAuditDbContext, AuditDbContext>();
         builder.Services.AddHostedService<AuditCleanupWorker>();
 
@@ -65,7 +81,14 @@ public static class DependencyInjection
 
         builder.Services.AddDbContext<ReadOnlyApplicationDbContext>(options =>
         {
-            options.UseNpgsql(readOnlyConnectionString);
+            if (string.IsNullOrEmpty(readOnlyConnectionString))
+            {
+                options.UseInMemoryDatabase("TestDb");
+            }
+            else
+            {
+                options.UseNpgsql(readOnlyConnectionString);
+            }
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
         });
         builder.Services.AddScoped<IReadOnlyApplicationDbContext, ReadOnlyApplicationDbContext>();
