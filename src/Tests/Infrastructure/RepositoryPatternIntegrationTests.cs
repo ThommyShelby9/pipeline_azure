@@ -438,8 +438,8 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         );
         await _context.SaveChangesAsync();
 
-        // Act
-        var cheapSpec = ActiveProductsSpecification.Create();
+        // Act - Delete cheap products (price <= 10)
+        var cheapSpec = ProductsByPriceRangeSpecification.Create(0m, 10m);
         var deleted = await _repository.DeleteRangeAsync(cheapSpec);
         await _context.SaveChangesAsync();
 

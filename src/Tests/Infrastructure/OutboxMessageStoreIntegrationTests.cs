@@ -274,9 +274,13 @@ public class OutboxMessageStoreIntegrationTests : IAsyncLifetime
         var message = await _outboxStore.AddEventAsync(product.DomainEvents.First());
 
         // Manually mark as processed with old date
-        await _context
-            .OutboxMessages.Where(m => m.Id == message.Id)
-            .ExecuteUpdateAsync(s => s.SetProperty(m => m.ProcessedOnUtc, oldDate));
+        // Note: ExecuteUpdate is not supported by InMemory provider, using ToList approach
+        var msgToUpdate = await _context.OutboxMessages.FirstOrDefaultAsync(m => m.Id == message.Id);
+        if (msgToUpdate != null)
+        {
+            msgToUpdate.ProcessedOnUtc = oldDate;
+            await _context.SaveChangesAsync();
+        }
 
         // Act
         var deleted = await _outboxStore.CleanupProcessedMessagesAsync(TimeSpan.FromDays(5));

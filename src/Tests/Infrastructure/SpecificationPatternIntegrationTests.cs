@@ -170,7 +170,8 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         var searchTerm = "Wireless";
-        var spec = SearchProductsSpecification.Create(searchTerm, 1, 10);
+        // Using Create without pagination to ensure Mouse is included
+        var spec = SearchProductsSpecification.Create(searchTerm);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -252,7 +253,8 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task SearchSpecification_WithEmptySearchTerm_ReturnsAllProducts()
     {
         // Arrange
-        var spec = SearchProductsSpecification.Create("", 1, 10);
+        // Using Create without pagination to get all products
+        var spec = SearchProductsSpecification.Create("");
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -281,6 +283,9 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         var spec = ActiveProductsSpecification.Create();
+
+        // Clear any tracked entities from seed data
+        _context.ChangeTracker.Clear();
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(

@@ -76,8 +76,14 @@ public class Repository<T> : IRepository<T>
         CancellationToken cancellationToken = default
     )
     {
+        // Note: Using ToList approach for InMemory provider compatibility
+        // ExecuteDeleteAsync is not supported by InMemory provider
         var query = ApplySpecification(spec);
-        return await query.ExecuteDeleteAsync(cancellationToken);
+        var entitiesToDelete = await query.ToListAsync(cancellationToken);
+
+        _context.Set<T>().RemoveRange(entitiesToDelete);
+
+        return entitiesToDelete.Count;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

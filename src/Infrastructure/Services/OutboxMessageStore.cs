@@ -201,10 +201,17 @@ public class OutboxMessageStore : IOutboxMessageStore
 
         try
         {
-            var deletedCount = await _context.OutboxMessages
+            // Note: Using ToList approach for InMemory provider compatibility
+            // ExecuteDeleteAsync is not supported by InMemory provider
+            var messagesToDelete = await _context.OutboxMessages
                 .Where(m => m.ProcessedOnUtc.HasValue && m.ProcessedOnUtc <= cutoffDate)
-                .ExecuteDeleteAsync(cancellationToken)
+                .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
+
+            _context.OutboxMessages.RemoveRange(messagesToDelete);
+            await _context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            var deletedCount = messagesToDelete.Count;
 
             _logger.LogInformation(
                 "Cleaned up {Count} processed outbox messages older than {CutoffDate}",
