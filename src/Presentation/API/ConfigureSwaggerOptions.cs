@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Asp.Versioning.ApiExplorer;
 
 namespace ShoppingProject.WebApi;

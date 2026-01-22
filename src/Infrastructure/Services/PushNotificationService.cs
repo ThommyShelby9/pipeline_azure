@@ -112,7 +112,7 @@ public class PushNotificationService : IPushNotificationService
             var cacheKey = $"push_tokens_{userId}";
             var tokens = await _cacheService.GetOrSetAsync(
                 cacheKey,
-                async () => new List<string>(),
+                () => Task.FromResult(new List<string>()),
                 TimeSpan.FromDays(30),
                 CancellationToken.None
             );

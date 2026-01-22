@@ -153,3 +153,9 @@ app.MapHub<ShoppingProject.Infrastructure.Hubs.NotificationHub>("/hubs/notificat
 app.MapFallbackToFile("index.html");
 
 await app.RunAsync();
+
+// Make Program class accessible to integration tests
+public partial class Program
+{
+    protected Program() { }
+}

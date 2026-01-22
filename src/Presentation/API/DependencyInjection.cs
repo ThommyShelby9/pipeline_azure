@@ -1,7 +1,7 @@
 using Asp.Versioning;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using ShoppingProject.Infrastructure.Constants;
 using ShoppingProject.WebApi.Handlers;
 
@@ -36,7 +36,20 @@ public static class DependencyInjection
                 Name = "Authorization",
             });
 
-            options.AddSecurityRequirement(document => new() { [new OpenApiSecuritySchemeReference("Bearer", document)] = [] });
+            options.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = schemeId
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
 
 

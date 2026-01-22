@@ -25,10 +25,10 @@ public class ProductsControllerAuthorizationTests
     }
 
     [Fact]
-    public void GetAll_HasAllowAnonymousAttribute()
+    public void GetAllForAdmin_HasAuthorizeAttribute()
     {
-        var method = _controller.GetType().GetMethod(nameof(ProductsController.GetAll));
-        var attributes = method?.GetCustomAttributes(typeof(AllowAnonymousAttribute), false);
+        var method = _controller.GetType().GetMethod(nameof(ProductsController.GetAllForAdmin));
+        var attributes = method?.GetCustomAttributes(typeof(AuthorizeAttribute), false);
         Assert.NotNull(attributes);
         Assert.NotEmpty(attributes);
     }

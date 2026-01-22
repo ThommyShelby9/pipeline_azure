@@ -47,9 +47,6 @@ public static class DependencyInjection
             {
                 options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
                 options.UseNpgsql(connectionString);
-                options.ConfigureWarnings(w =>
-                    w.Ignore(RelationalEventId.PendingModelChangesWarning)
-                );
             }
         );
         builder.Services.AddScoped<IApplicationDbContext, ApplicationDbContext>();
@@ -70,7 +67,6 @@ public static class DependencyInjection
         {
             options.UseNpgsql(readOnlyConnectionString);
             options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
         });
         builder.Services.AddScoped<IReadOnlyApplicationDbContext, ReadOnlyApplicationDbContext>();
 

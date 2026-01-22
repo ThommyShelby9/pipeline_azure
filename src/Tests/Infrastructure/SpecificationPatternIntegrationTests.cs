@@ -105,7 +105,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task ActiveProductsSpecification_ReturnsOnlyActiveProducts()
     {
         // Arrange
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -120,7 +120,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task ProductsByCategorySpecification_FiltersByCategory()
     {
         // Arrange
-        var spec = new ProductsByCategorySpecification("Electronics");
+        var spec = ProductsByCategorySpecification.Create("Electronics");
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -138,7 +138,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
         // Arrange
         var pageIndex = 1;
         var pageSize = 2;
-        var spec = new ProductsWithPaginationSpecification(pageIndex, pageSize);
+        var spec = ProductsWithPaginationSpecification.Create(pageIndex, pageSize);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -154,7 +154,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
         // Arrange
         var pageIndex = 2;
         var pageSize = 2;
-        var spec = new ProductsWithPaginationSpecification(pageIndex, pageSize);
+        var spec = ProductsWithPaginationSpecification.Create(pageIndex, pageSize);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -169,7 +169,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         var searchTerm = "Keyboard";
-        var spec = new SearchProductsSpecification(searchTerm, 1, 10);
+        var spec = SearchProductsSpecification.Create(searchTerm, 1, 10);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -185,7 +185,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         var searchTerm = "Wireless";
-        var spec = new SearchProductsSpecification(searchTerm, 1, 10);
+        var spec = SearchProductsSpecification.Create(searchTerm, 1, 10);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -201,7 +201,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
         // Arrange
         var minPrice = 50m;
         var maxPrice = 150m;
-        var spec = new ProductsByPriceRangeSpecification(minPrice, maxPrice);
+        var spec = ProductsByPriceRangeSpecification.Create(minPrice, maxPrice);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -222,7 +222,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task ProductsByCategoryWithPaginationSpecification_FiltersCategoryAndPaginates()
     {
         // Arrange
-        var spec = new ProductsByCategoryWithPaginationSpecification("Furniture", 1, 1);
+        var spec = ProductsByCategoryWithPaginationSpecification.Create("Furniture", 1, 1);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -237,7 +237,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task SpecificationEvaluator_AppliesOrderingCorrectly()
     {
         // Arrange
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -252,7 +252,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task SpecificationEvaluator_AppliesFiltersAndOrderingAndPagination()
     {
         // Arrange
-        var spec = new ProductsWithPaginationSpecification(1, 3);
+        var spec = ProductsWithPaginationSpecification.Create(1, 3);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -267,7 +267,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task SearchSpecification_WithEmptySearchTerm_ReturnsAllProducts()
     {
         // Arrange
-        var spec = new SearchProductsSpecification("", 1, 10);
+        var spec = SearchProductsSpecification.Create("", 1, 10);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -281,7 +281,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task PriceRangeSpecification_WithNarrowRange_ReturnsCorrectProducts()
     {
         // Arrange
-        var spec = new ProductsByPriceRangeSpecification(25m, 35m);
+        var spec = ProductsByPriceRangeSpecification.Create(25m, 35m);
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);
@@ -295,14 +295,14 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     public async Task SpecificationEvaluator_ReadsAsNoTracking()
     {
         // Arrange
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(
             _context.Products.AsNoTracking(),
             spec
         );
-        var results = await query.ToListAsync();
+        await query.ToListAsync();
 
         // Assert
         // Verify no change tracking entries exist
@@ -314,7 +314,7 @@ public class SpecificationPatternIntegrationTests : IAsyncLifetime
     {
         // Arrange
         // Create a custom specification combining multiple filters
-        var spec = new ProductsByCategorySpecification("Electronics");
+        var spec = ProductsByCategorySpecification.Create("Electronics");
 
         // Act
         var query = SpecificationEvaluator<Product>.GetQuery(_context.Products, spec);

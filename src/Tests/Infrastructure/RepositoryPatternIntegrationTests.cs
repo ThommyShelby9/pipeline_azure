@@ -163,7 +163,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
         var active = await _repository.ListAsync(spec);
 
         // Assert
@@ -187,7 +187,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var spec = new ProductsByCategorySpecification("Electronics");
+        var spec = ProductsByCategorySpecification.Create("Electronics");
         var electronics = await _repository.ListAsync(spec);
 
         // Assert
@@ -208,14 +208,13 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var spec = new ProductsWithPaginationSpecification(skip: 5, take: 5);
-        spec.Initialize();
+        var spec = ProductsWithPaginationSpecification.Create(skip: 5, take: 5);
         var page2 = await _repository.ListAsync(spec);
 
         // Assert
         page2.Should().HaveCount(5);
-        page2.First().Title.Should().Be("Product 06");
-        page2.Last().Title.Should().Be("Product 10");
+        page2[0].Title.Should().Be("Product 06");
+        page2[^1].Title.Should().Be("Product 10");
     }
 
     [Fact]
@@ -247,12 +246,12 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
 
         // Act
         // SearchProductsSpecification missing
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
         var results = await _repository.ListAsync(spec);
 
         // Assert
         results.Should().HaveCount(1);
-        results.First().Title.Should().Be("Laptop Computer");
+        results[0].Title.Should().Be("Laptop Computer");
     }
 
     [Fact]
@@ -268,7 +267,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var spec = new ProductsByCategorySpecification("Furniture");
+        var spec = ProductsByCategorySpecification.Create("Furniture");
         var product = await _repository.FirstOrDefaultAsync(spec);
 
         // Assert
@@ -287,7 +286,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var spec = new ProductsByCategorySpecification("NonExistent");
+        var spec = ProductsByCategorySpecification.Create("NonExistent");
         var product = await _repository.FirstOrDefaultAsync(spec);
 
         // Assert
@@ -335,7 +334,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         // Act
         // ProductsByPriceRangeSpecification seems missing from ProductSpecifications.cs
         // I will use ActiveProductsSpecification for now to make tests compile if possible
-        var spec = new ActiveProductsSpecification();
+        var spec = ActiveProductsSpecification.Create();
         var count = await _repository.CountAsync(spec);
 
         // Assert
@@ -409,7 +408,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         // Assert
         var remaining = await _repository.ListAllAsync();
         remaining.Should().HaveCount(1);
-        remaining.First().Title.Should().Be("Product 3");
+        remaining[0].Title.Should().Be("Product 3");
     }
 
     [Fact]
@@ -428,7 +427,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         await _context.SaveChangesAsync();
 
         // Act
-        var cheapSpec = new ActiveProductsSpecification();
+        var cheapSpec = ActiveProductsSpecification.Create();
         var deleted = await _repository.DeleteRangeAsync(cheapSpec);
         await _context.SaveChangesAsync();
 
@@ -436,7 +435,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
         deleted.Should().Be(2);
         var remaining = await _repository.ListAllAsync();
         remaining.Should().HaveCount(1);
-        remaining.First().Title.Should().Be("Expensive");
+        remaining[0].Title.Should().Be("Expensive");
     }
 
     [Fact]
@@ -528,7 +527,7 @@ public class RepositoryPatternIntegrationTests : IAsyncLifetime
 
         // Act
         // ProductsByCategoryWithPaginationSpecification missing
-        var spec = new ProductsByCategorySpecification("Electronics");
+        var spec = ProductsByCategorySpecification.Create("Electronics");
         var results = await _repository.ListAsync(spec);
 
         // Assert
