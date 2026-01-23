@@ -191,14 +191,14 @@ resource sqlAzureConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2022-
   }
 }
 
-resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
-  name: keyVaultResourceGroup
+  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroup().name
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
-  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : resourceGroup()
+  scope: keyVaultRg
 }
 
 var connectionString = 'Server=${sqlServer.properties.fullyQualifiedDomainName}; Database=${sqlDatabase.name}; User=${appUser}'

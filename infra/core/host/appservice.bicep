@@ -162,14 +162,14 @@ resource configLogs 'Microsoft.Web/sites/config@2022-03-01' = {
   dependsOn: [configAppSettings]
 }
 
-resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
   scope: subscription()
-  name: keyVaultResourceGroup
+  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroup().name
 }
 
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = if (!(empty(keyVaultName))) {
   name: keyVaultName
-  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : resourceGroup()
+  scope: keyVaultRg
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = if (!empty(applicationInsightsName)) {
