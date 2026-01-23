@@ -78,14 +78,9 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   scope: rg
 }
 
-module keyVault 'core/security/keyvault.bicep' = {
-  name: 'keyvault-${deploymentSuffix}'
-  params: {
-    location: location
-    tags: tags
-    name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-    principalId: principalId
-  }
+// Reference existing Key Vault instead of creating a new one
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
   scope: rg
 }
 
@@ -97,7 +92,7 @@ module web 'services/web.bicep' = {
     tags: tags
     serviceName: webServiceName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.name
     deploymentSuffix: deploymentSuffix
   }
   scope: rg
@@ -111,7 +106,7 @@ module database 'core/database/sqlserver/sqlserver.bicep' = {
     location: location
     tags: tags
     databaseName: !empty(dbName) ? dbName : '${abbrs.sqlServersDatabases}${resourceToken}'
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.name
     connectionStringKey: 'ConnectionStrings-dotnet-infraDb'
     sqlAdminPassword: dbAdminPassword
     appUserPassword: dbAppUserPassword
@@ -122,7 +117,7 @@ module database 'core/database/sqlserver/sqlserver.bicep' = {
 module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
   name: 'webKeyVaultAccess-${deploymentSuffix}'
   params: {
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.name
     principalId: web.outputs.identityPrincipalId
   }
   scope: rg
@@ -132,7 +127,7 @@ module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
 module stagingSlotKeyVaultAccess 'core/security/keyvault-access.bicep' = {
   name: 'stagingSlotKeyVaultAccess-${deploymentSuffix}'
   params: {
-    keyVaultName: keyVault.outputs.name
+    keyVaultName: keyVault.name
     principalId: web.outputs.stagingSlotIdentityPrincipalId
   }
   scope: rg
@@ -148,8 +143,8 @@ module stagingSlotKeyVaultAccess 'core/security/keyvault-access.bicep' = {
 // To see these outputs, run `azd env get-values`,  or `azd env get-values --output json` for json output.
 output AZURE_LOCATION string = location
 output AZURE_TENANT_ID string = tenant().tenantId
-output AZURE_KEY_VAULT_NAME string = keyVault.outputs.name
-output AZURE_KEY_VAULT_ENDPOINT string = keyVault.outputs.endpoint
+output AZURE_KEY_VAULT_NAME string = keyVault.name
+output AZURE_KEY_VAULT_ENDPOINT string = keyVault.properties.vaultUri
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = monitoring.outputs.applicationInsightsConnectionString
 output AZURE_SQL_CONNECTION_STRING_KEY string = database.outputs.connectionStringKey
 output WEB_BASE_URI string = web.outputs.uri
