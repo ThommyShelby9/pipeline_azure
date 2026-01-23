@@ -10,6 +10,7 @@ parameters:
   dbAppUserPassword: ''
   webAppName: ''
   keyVaultName: ''
+  keyVaultResourceGroup: ''
 
 
 jobs:
@@ -70,6 +71,7 @@ jobs:
               --parameters deploymentSuffix="$deploymentSuffix" `
               --parameters appServiceName="${{ parameters.webAppName }}" `
               --parameters keyVaultName="${{ parameters.keyVaultName }}" `
+              --parameters keyVaultResourceGroup="${{ parameters.keyVaultResourceGroup }}" `
               2>&1
 
             $exitCode = $LASTEXITCODE

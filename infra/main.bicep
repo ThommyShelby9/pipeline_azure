@@ -22,6 +22,7 @@ param logAnalyticsName string = ''
 param applicationInsightsName string = ''
 param applicationInsightsDashboardName string = ''
 param keyVaultName string = ''
+param keyVaultResourceGroup string = ''
 param appServiceName string = ''
 param dbServerName string = ''
 param dbName string = ''
@@ -65,6 +66,11 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 
 // Add resources to be provisioned below.
 
+// Reference existing resource group where Key Vault is located
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
+  name: keyVaultResourceGroup
+}
+
 module monitoring 'core/monitor/monitoring.bicep' = {
   name: 'monitoring-${deploymentSuffix}'
   params: {
@@ -78,10 +84,10 @@ module monitoring 'core/monitor/monitoring.bicep' = {
   scope: rg
 }
 
-// Reference existing Key Vault instead of creating a new one
+// Reference existing Key Vault in its resource group (eastus)
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-  scope: rg
+  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : rg
 }
 
 module web 'services/web.bicep' = {
