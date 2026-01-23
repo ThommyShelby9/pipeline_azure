@@ -64,10 +64,11 @@ jobs:
 
             - task: FileTransform@2
               displayName: 'JSON variable substitution'
+              continueOnError: true
               inputs:
                 folderPath: '$(Pipeline.Workspace)/${{ parameters.artifactName }}'
                 fileType: 'json'
-                jsonTargetFiles: '**/appsettings.json'
+                targetFiles: 'appsettings.json'
 
             - task: ArchiveFiles@2
               displayName: 'Archive deployment package'
