@@ -179,7 +179,7 @@ SCRIPT_END
   }
 }
 
-module sqlAdminPasswordSecret '../security/keyvault-secret.bicep' = {
+module sqlAdminPasswordSecret '../../security/keyvault-secret.bicep' = {
   name: 'dbAdminPassword-secret'
   scope: keyVaultRg
   params: {
@@ -189,7 +189,7 @@ module sqlAdminPasswordSecret '../security/keyvault-secret.bicep' = {
   }
 }
 
-module appUserPasswordSecret '../security/keyvault-secret.bicep' = {
+module appUserPasswordSecret '../../security/keyvault-secret.bicep' = {
   name: 'dbAppUserPassword-secret'
   scope: keyVaultRg
   params: {
@@ -199,7 +199,7 @@ module appUserPasswordSecret '../security/keyvault-secret.bicep' = {
   }
 }
 
-module sqlAzureConnectionStringSecret '../security/keyvault-secret.bicep' = {
+module sqlAzureConnectionStringSecret '../../security/keyvault-secret.bicep' = {
   name: 'connectionString-secret'
   scope: keyVaultRg
   params: {
