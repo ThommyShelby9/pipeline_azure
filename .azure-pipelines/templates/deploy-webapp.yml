@@ -20,6 +20,16 @@ jobs:
             - download: current
               artifact: ${{ parameters.artifactName }}
 
+            - pwsh: |
+                Write-Host "=========================================="
+                Write-Host "Artifact folder structure:"
+                Write-Host "=========================================="
+                Get-ChildItem -Path "$(Pipeline.Workspace)/${{ parameters.artifactName }}" -Recurse -File | Select-Object FullName, Length | Format-Table -AutoSize
+                Write-Host ""
+                Write-Host "Searching for appsettings.json:"
+                Get-ChildItem -Path "$(Pipeline.Workspace)/${{ parameters.artifactName }}" -Filter "appsettings.json" -Recurse | Select-Object FullName
+              displayName: 'Diagnose artifact structure'
+
             - task: AzureKeyVault@2
               displayName: 'Fetch secrets from Key Vault'
               inputs:
