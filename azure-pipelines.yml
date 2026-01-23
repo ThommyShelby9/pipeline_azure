@@ -53,6 +53,8 @@ stages:
           principalId: $(principalId)
           dbAdminPassword: $(dbAdminPassword)
           dbAppUserPassword: $(dbAppUserPassword)
+          webAppName: $(webAppName)
+          keyVaultName: $(keyVaultName)
 
   # ===========================================
   # Stage 2: Build .NET - US-02
@@ -125,6 +127,7 @@ stages:
   - stage: Deploy_Staging
     displayName: 'Deploy (Staging Slot)'
     dependsOn:
+      - Infrastructure
       - Package
       - DevSecOps
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), eq(variables['Build.SourceBranch'], 'refs/heads/main')))
