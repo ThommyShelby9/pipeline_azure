@@ -5,6 +5,7 @@ param tags object = {}
 param serviceName string = 'web'
 param applicationInsightsName string = ''
 param keyVaultName string = ''
+param keyVaultResourceGroup string = ''
 param deploymentSuffix string = utcNow()
 
 // App Service Plan - S1 required for deployment slots
@@ -32,6 +33,7 @@ module appService '../core/host/appservice.bicep' = {
     appServicePlanId: appServicePlan.outputs.id
     applicationInsightsName: applicationInsightsName
     keyVaultName: keyVaultName
+    keyVaultResourceGroup: keyVaultResourceGroup
     runtimeName: 'dotnetcore'
     runtimeVersion: '8.0'
     healthCheckPath: '/health'
@@ -53,6 +55,7 @@ module stagingSlot '../core/host/appservice-slot.bicep' = {
     appServicePlanId: appServicePlan.outputs.id
     applicationInsightsName: applicationInsightsName
     keyVaultName: keyVaultName
+    keyVaultResourceGroup: keyVaultResourceGroup
     runtimeName: 'dotnetcore'
     runtimeVersion: '8.0'
     healthCheckPath: '/health'

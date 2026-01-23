@@ -99,6 +99,7 @@ module web 'services/web.bicep' = {
     serviceName: webServiceName
     applicationInsightsName: monitoring.outputs.applicationInsightsName
     keyVaultName: keyVault.name
+    keyVaultResourceGroup: keyVaultRg.name
     deploymentSuffix: deploymentSuffix
   }
   scope: rg
@@ -113,7 +114,8 @@ module database 'core/database/sqlserver/sqlserver.bicep' = {
     tags: tags
     databaseName: !empty(dbName) ? dbName : '${abbrs.sqlServersDatabases}${resourceToken}'
     keyVaultName: keyVault.name
-    connectionStringKey: 'ConnectionStrings-dotnet-infraDb'
+    keyVaultResourceGroup: keyVaultRg.name
+    connectionStringKey: 'ConnectionStrings--DefaultConnection'
     sqlAdminPassword: dbAdminPassword
     appUserPassword: dbAppUserPassword
   }
@@ -126,7 +128,7 @@ module webKeyVaultAccess 'core/security/keyvault-access.bicep' = {
     keyVaultName: keyVault.name
     principalId: web.outputs.identityPrincipalId
   }
-  scope: rg
+  scope: keyVaultRg
 }
 
 // Key Vault access for staging slot
@@ -136,7 +138,7 @@ module stagingSlotKeyVaultAccess 'core/security/keyvault-access.bicep' = {
     keyVaultName: keyVault.name
     principalId: web.outputs.stagingSlotIdentityPrincipalId
   }
-  scope: rg
+  scope: keyVaultRg
 }
 
 // Add outputs from the deployment here, if needed.

@@ -7,6 +7,7 @@ param logAnalyticsWorkspaceId string = ''
 param appUser string = 'appUser'
 param databaseName string
 param keyVaultName string
+param keyVaultResourceGroup string = ''
 param sqlAdmin string = 'sqlAdmin'
 param connectionStringKey string = 'AZURE-SQL-CONNECTION-STRING'
 
@@ -190,8 +191,14 @@ resource sqlAzureConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2022-
   }
 }
 
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
+  scope: subscription()
+  name: keyVaultResourceGroup
+}
+
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: keyVaultName
+  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : resourceGroup()
 }
 
 var connectionString = 'Server=${sqlServer.properties.fullyQualifiedDomainName}; Database=${sqlDatabase.name}; User=${appUser}'

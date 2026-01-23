@@ -24,6 +24,7 @@ param healthCheckPath string = ''
 param appSettings object = {}
 param applicationInsightsName string = ''
 param keyVaultName string = ''
+param keyVaultResourceGroup string = ''
 param managedIdentity bool = !empty(keyVaultName)
 
 resource appService 'Microsoft.Web/sites@2022-03-01' existing = {
@@ -59,8 +60,14 @@ resource slotConfig 'Microsoft.Web/sites/slots/config@2022-03-01' = {
     !empty(keyVaultName) ? { AZURE_KEY_VAULT_ENDPOINT: keyVault!.properties.vaultUri } : {})
 }
 
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
+  scope: subscription()
+  name: keyVaultResourceGroup
+}
+
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = if (!(empty(keyVaultName))) {
   name: keyVaultName
+  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : resourceGroup()
 }
 
 resource applicationInsights 'Microsoft.Insights/components@2020-02-02' existing = if (!empty(applicationInsightsName)) {
