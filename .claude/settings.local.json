@@ -20,7 +20,11 @@
       "Bash(would overwrite an existing deployment which is still active.\"\nEOF\n\\)\")",
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run test:*)"
+      "Bash(npm run test:*)",
+      "Bash(npm run lint)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run test:coverage:*)",
+      "Bash(report\" step with error: \"Cannot find dependency '@vitest/coverage-v8'\".\n\nAlso add coverage/ directory to .gitignore to prevent committing\ncoverage reports.\n\nVerified: npm run test:coverage now generates reports successfully\nwith 35.77% overall coverage.\nEOF\n\\)\")"
     ]
   }
 }

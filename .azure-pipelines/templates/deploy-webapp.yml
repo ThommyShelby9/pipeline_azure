@@ -27,7 +27,7 @@ jobs:
                 KeyVaultName: ${{ parameters.keyVaultName }}
                 SecretsFilter: >
                   ConnectionStrings--DefaultConnection,
-                  ConnectionStrings--DefaultConnection_ReadOnly,
+                  ConnectionStrings--DefaultConnection-ReadOnly,
                   ConnectionStrings--AuditConnection,
                   ConnectionStrings--RedisConnection,
                   ConnectionStrings--RabbitMqConnection,
@@ -40,7 +40,7 @@ jobs:
 
             - pwsh: |
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection;issecret=true]$(ConnectionStrings--DefaultConnection)"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection_ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection_ReadOnly)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings--DefaultConnection-ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection-ReadOnly)"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.AuditConnection;issecret=true]$(ConnectionStrings--AuditConnection)"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.RedisConnection;issecret=true]$(ConnectionStrings--RedisConnection)"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.RabbitMqConnection;issecret=true]$(ConnectionStrings--RabbitMqConnection)"
