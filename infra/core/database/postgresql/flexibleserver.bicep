@@ -16,12 +16,25 @@ param allowAzureIPsFirewall bool = false
 param allowAllIPsFirewall bool = false
 param allowedSingleIPs array = []
 param keyVaultName string
+param keyVaultResourceGroup string = ''
 param connectionStringKey string
 
 // PostgreSQL version
 param version string
 
 param utcNowString string = utcNow('yyyyMMddHHmm')
+
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  scope: subscription()
+  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroup().name
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+  scope: keyVaultRg
+}
+
+var connectionString = 'Host=${postgresServer.properties.fullyQualifiedDomainName};Port=5432;Database=${databaseName};Username=${appUserLogin}'
 
 // Latest official version 2022-12-01 does not have Bicep types available
 resource postgresServer 'Microsoft.DBforPostgreSQL/flexibleServers@2022-12-01' = {
@@ -121,33 +134,34 @@ psql "host=$DBSERVER.postgres.database.azure.com user=$ADMINLOGIN dbname=$DBNAME
   ]
 }
 
-resource administratorLoginPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: 'dbAdminPassword'
-  properties: {
-    value: administratorLoginPassword
+module administratorLoginPasswordSecret '../../security/keyvault-secret.bicep' = {
+  name: 'dbAdminPassword-secret'
+  scope: keyVaultRg
+  params: {
+    name: 'dbAdminPassword'
+    keyVaultName: keyVault.name
+    secretValue: administratorLoginPassword
   }
 }
 
-resource appUserLoginPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: 'dbAppUserPassword'
-  properties: {
-    value: appUserLoginPassword
+module appUserLoginPasswordSecret '../../security/keyvault-secret.bicep' = {
+  name: 'dbAppUserPassword-secret'
+  scope: keyVaultRg
+  params: {
+    name: 'dbAppUserPassword'
+    keyVaultName: keyVault.name
+    secretValue: appUserLoginPassword
   }
 }
 
-resource sqlAzureConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: connectionStringKey
-  properties: {
-    value: '${connectionString}; Password=${appUserLoginPassword}'
+module sqlAzureConnectionStringSecret '../../security/keyvault-secret.bicep' = {
+  name: 'connectionString-secret'
+  scope: keyVaultRg
+  params: {
+    name: connectionStringKey
+    keyVaultName: keyVault.name
+    secretValue: '${connectionString}; Password=${appUserLoginPassword}'
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyVaultName
-}
-
-var connectionString = 'Host=${postgresServer.properties.fullyQualifiedDomainName};Port=5432;Database=${databaseName};Username=${appUserLogin}'
 output connectionStringKey string = connectionStringKey

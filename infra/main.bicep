@@ -106,18 +106,67 @@ module web 'services/web.bicep' = {
 }
 
 
-module database 'core/database/sqlserver/sqlserver.bicep' = {
+// PostgreSQL Flexible Server
+module database 'core/database/postgresql/flexibleserver.bicep' = {
   name: 'database-${deploymentSuffix}'
   params: {
-    name: !empty(dbServerName) ? dbServerName : '${abbrs.sqlServers}${resourceToken}'
+    name: !empty(dbServerName) ? dbServerName : '${abbrs.postgreSQLServers}${resourceToken}'
     location: location
     tags: tags
-    databaseName: !empty(dbName) ? dbName : '${abbrs.sqlServersDatabases}${resourceToken}'
+    databaseName: !empty(dbName) ? dbName : '${abbrs.postgreSQLServersDatabases}${resourceToken}'
     keyVaultName: keyVault.name
     keyVaultResourceGroup: keyVaultRg.name
     connectionStringKey: 'ConnectionStrings--DefaultConnection'
-    sqlAdminPassword: dbAdminPassword
-    appUserPassword: dbAppUserPassword
+    administratorLogin: 'psqladmin'
+    administratorLoginPassword: dbAdminPassword
+    appUserLogin: 'appuser'
+    appUserLoginPassword: dbAppUserPassword
+    version: '16'
+    allowAzureIPsFirewall: true
+    sku: {
+      name: 'Standard_B1ms'
+      tier: 'Burstable'
+    }
+    storage: {
+      storageSizeGB: 32
+    }
+  }
+  scope: rg
+}
+
+// Azure Cache for Redis
+module redis 'core/cache/redis.bicep' = {
+  name: 'redis-${deploymentSuffix}'
+  params: {
+    name: '${abbrs.cacheRedis}${resourceToken}'
+    location: location
+    tags: tags
+    keyVaultName: keyVault.name
+    keyVaultResourceGroup: keyVaultRg.name
+    connectionStringKey: 'ConnectionStrings--RedisConnection'
+    sku: {
+      name: 'Basic'
+      family: 'C'
+      capacity: 0
+    }
+  }
+  scope: rg
+}
+
+// Azure Service Bus (RabbitMQ alternative)
+module serviceBus 'core/messaging/servicebus.bicep' = {
+  name: 'servicebus-${deploymentSuffix}'
+  params: {
+    name: '${abbrs.serviceBusNamespaces}${resourceToken}'
+    location: location
+    tags: tags
+    keyVaultName: keyVault.name
+    keyVaultResourceGroup: keyVaultRg.name
+    connectionStringKey: 'ConnectionStrings--RabbitMqConnection'
+    sku: {
+      name: 'Basic'
+      tier: 'Basic'
+    }
   }
   scope: rg
 }
