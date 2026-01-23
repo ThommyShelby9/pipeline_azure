@@ -67,8 +67,8 @@ resource rg 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 // Add resources to be provisioned below.
 
 // Reference existing resource group where Key Vault is located
-resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = if (!empty(keyVaultResourceGroup)) {
-  name: keyVaultResourceGroup
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroupName
 }
 
 module monitoring 'core/monitor/monitoring.bicep' = {
@@ -87,7 +87,7 @@ module monitoring 'core/monitor/monitoring.bicep' = {
 // Reference existing Key Vault in its resource group (eastus)
 resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
   name: !empty(keyVaultName) ? keyVaultName : '${abbrs.keyVaultVaults}${resourceToken}'
-  scope: !empty(keyVaultResourceGroup) ? keyVaultRg : rg
+  scope: keyVaultRg
 }
 
 module web 'services/web.bicep' = {
