@@ -18,6 +18,18 @@ param appUserPassword string
 
 param utcNowString string = utcNow('yyyyMMddHHmm')
 
+resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
+  scope: subscription()
+  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroup().name
+}
+
+resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
+  name: keyVaultName
+  scope: keyVaultRg
+}
+
+var connectionString = 'Server=${sqlServer.properties.fullyQualifiedDomainName}; Database=${sqlDatabase.name}; User=${appUser}'
+
 resource sqlServer 'Microsoft.Sql/servers@2022-05-01-preview' = {
   name: name
   location: location
@@ -167,40 +179,35 @@ SCRIPT_END
   }
 }
 
-resource sqlAdminPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: 'dbAdminPassword'
-  properties: {
-    value: sqlAdminPassword
-  }
-}
-
-resource appUserPasswordSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: 'dbAppUserPassword'
-  properties: {
-    value: appUserPassword
-  }
-}
-
-resource sqlAzureConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2022-07-01' = {
-  parent: keyVault
-  name: connectionStringKey
-  properties: {
-    value: '${connectionString}; Password=${appUserPassword}'
-  }
-}
-
-resource keyVaultRg 'Microsoft.Resources/resourceGroups@2021-04-01' existing = {
-  scope: subscription()
-  name: !empty(keyVaultResourceGroup) ? keyVaultResourceGroup : resourceGroup().name
-}
-
-resource keyVault 'Microsoft.KeyVault/vaults@2022-07-01' existing = {
-  name: keyVaultName
+module sqlAdminPasswordSecret '../security/keyvault-secret.bicep' = {
+  name: 'dbAdminPassword-secret'
   scope: keyVaultRg
+  params: {
+    name: 'dbAdminPassword'
+    keyVaultName: keyVault.name
+    secretValue: sqlAdminPassword
+  }
 }
 
-var connectionString = 'Server=${sqlServer.properties.fullyQualifiedDomainName}; Database=${sqlDatabase.name}; User=${appUser}'
+module appUserPasswordSecret '../security/keyvault-secret.bicep' = {
+  name: 'dbAppUserPassword-secret'
+  scope: keyVaultRg
+  params: {
+    name: 'dbAppUserPassword'
+    keyVaultName: keyVault.name
+    secretValue: appUserPassword
+  }
+}
+
+module sqlAzureConnectionStringSecret '../security/keyvault-secret.bicep' = {
+  name: 'connectionString-secret'
+  scope: keyVaultRg
+  params: {
+    name: connectionStringKey
+    keyVaultName: keyVault.name
+    secretValue: '${connectionString}; Password=${appUserPassword}'
+  }
+}
+
 output connectionStringKey string = connectionStringKey
 output databaseName string = sqlDatabase.name
