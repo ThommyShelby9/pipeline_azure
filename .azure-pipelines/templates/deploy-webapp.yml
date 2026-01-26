@@ -49,18 +49,18 @@ jobs:
                   Email--SmtpPass
 
             - pwsh: |
-                Write-Host "##vso[task.setvariable variable=KeyVault.Name;issecret=false]${{ parameters.keyVaultName }}"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection;issecret=true]$(ConnectionStrings--DefaultConnection)"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings--DefaultConnection-ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection-ReadOnly)"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings.AuditConnection;issecret=true]$(ConnectionStrings--AuditConnection)"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings.RedisConnection;issecret=true]$(ConnectionStrings--RedisConnection)"
-                Write-Host "##vso[task.setvariable variable=ConnectionStrings.RabbitMqConnection;issecret=true]$(ConnectionStrings--RabbitMqConnection)"
-                Write-Host "##vso[task.setvariable variable=JwtSettings.Secret;issecret=true]$(JwtSettings--Secret)"
-                Write-Host "##vso[task.setvariable variable=Authentication.ApiKey;issecret=true]$(Authentication--ApiKey)"
-                Write-Host "##vso[task.setvariable variable=ServiceBusOption.Url;issecret=true]$(ServiceBusOption--Url)"
-                Write-Host "##vso[task.setvariable variable=Hangfire.ConnectionString;issecret=true]$(Hangfire--ConnectionString)"
-                Write-Host "##vso[task.setvariable variable=Email.SmtpUser;issecret=true]$(Email--SmtpUser)"
-                Write-Host "##vso[task.setvariable variable=Email.SmtpPass;issecret=true]$(Email--SmtpPass)"
+                Write-Host "##vso[task.setvariable variable=KeyVault__Name;issecret=false]${{ parameters.keyVaultName }}"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings__DefaultConnection;issecret=true]$(ConnectionStrings--DefaultConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings__DefaultConnection-ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection-ReadOnly)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings__AuditConnection;issecret=true]$(ConnectionStrings--AuditConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings__RedisConnection;issecret=true]$(ConnectionStrings--RedisConnection)"
+                Write-Host "##vso[task.setvariable variable=ConnectionStrings__RabbitMqConnection;issecret=true]$(ConnectionStrings--RabbitMqConnection)"
+                Write-Host "##vso[task.setvariable variable=JwtSettings__Secret;issecret=true]$(JwtSettings--Secret)"
+                Write-Host "##vso[task.setvariable variable=Authentication__ApiKey;issecret=true]$(Authentication--ApiKey)"
+                Write-Host "##vso[task.setvariable variable=ServiceBusOption__Url;issecret=true]$(ServiceBusOption--Url)"
+                Write-Host "##vso[task.setvariable variable=Hangfire__ConnectionString;issecret=true]$(Hangfire--ConnectionString)"
+                Write-Host "##vso[task.setvariable variable=Email__SmtpUser;issecret=true]$(Email--SmtpUser)"
+                Write-Host "##vso[task.setvariable variable=Email__SmtpPass;issecret=true]$(Email--SmtpPass)"
               displayName: 'Map Key Vault secrets for JSON transform'
 
             - task: FileTransform@2
