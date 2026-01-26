@@ -16,7 +16,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=ShoppingProjectDb;Username=postgres;Password=postgres
       - ConnectionStrings__AuditConnection=Host=postgres-audit;Database=AuditLogDb;Username=postgres;Password=postgres
       - ConnectionStrings__RedisConnection=redis:6379
-      - ServiceBus__Url=amqp://guest:guest@rabbitmq:5672
+      - ConnectionStrings__RabbitMqConnection=amqp://guest:guest@rabbitmq:5672
       - Hangfire__ConnectionString=Host=postgres;Database=ShoppingProjectDb;Username=postgres;Password=postgres
       - Observability__ElasticsearchUrl=http://elasticsearch:9200
       - Observability__OtlpEndpoint=http://jaeger:4317
