@@ -49,6 +49,7 @@ jobs:
                   Email--SmtpPass
 
             - pwsh: |
+                Write-Host "##vso[task.setvariable variable=KeyVault.Name;issecret=false]${{ parameters.keyVaultName }}"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.DefaultConnection;issecret=true]$(ConnectionStrings--DefaultConnection)"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings--DefaultConnection-ReadOnly;issecret=true]$(ConnectionStrings--DefaultConnection-ReadOnly)"
                 Write-Host "##vso[task.setvariable variable=ConnectionStrings.AuditConnection;issecret=true]$(ConnectionStrings--AuditConnection)"
