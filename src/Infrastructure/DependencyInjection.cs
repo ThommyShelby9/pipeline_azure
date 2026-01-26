@@ -109,6 +109,7 @@ public static class DependencyInjection
         builder.Services.AddScoped<ICartRepository, CartRepository>();
         builder.Services.AddScoped<IProductRepository, ProductRepository>();
         builder.Services.AddScoped<IPushTokenRepository, PushTokenRepository>();
+        builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         // Outbox & Event Publishing
         builder.Services.AddScoped<IOutboxMessageStore, OutboxMessageStore>();

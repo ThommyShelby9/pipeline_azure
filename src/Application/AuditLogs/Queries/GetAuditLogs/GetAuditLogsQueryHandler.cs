@@ -1,22 +1,23 @@
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
+using ShoppingProject.Application.AuditLogs.Specifications;
 using ShoppingProject.Application.Common.Interfaces;
 using ShoppingProject.Application.Common.Mappings;
 using ShoppingProject.Application.Common.Models;
+using ShoppingProject.Application.Common.Specifications;
+using ShoppingProject.Domain.Entities;
 
 namespace ShoppingProject.Application.AuditLogs.Queries.GetAuditLogs;
 
 public class GetAuditLogsQueryHandler
     : IRequestHandler<GetAuditLogsQuery, PaginatedList<AuditLogDto>>
 {
-    private readonly IAuditDbContext _context;
+    private readonly IAuditLogRepository _repository;
     private readonly IMapper _mapper;
 
-    public GetAuditLogsQueryHandler(IAuditDbContext context, IMapper mapper)
+    public GetAuditLogsQueryHandler(IAuditLogRepository repository, IMapper mapper)
     {
-        _context = context;
+        _repository = repository;
         _mapper = mapper;
     }
 
@@ -25,10 +26,20 @@ public class GetAuditLogsQueryHandler
         CancellationToken cancellationToken
     )
     {
-        return await _context
-            .AuditLogs.AsNoTracking()
-            .OrderByDescending(x => x.Timestamp)
-            .ProjectTo<AuditLogDto>(_mapper.ConfigurationProvider)
-            .PaginatedListAsync(request.PageNumber, request.PageSize, cancellationToken);
+        var spec = AuditLogsSpecification.Create(request.PageNumber, request.PageSize);
+
+        // Count all audit logs without pagination for total count
+        var allAuditLogsSpec = AuditLogsSpecification.CreateForCount();
+        var totalCount = await _repository.CountAsync(allAuditLogsSpec, cancellationToken);
+        var auditLogs = await _repository.ListAsync(spec, cancellationToken);
+
+        var mappedLogs = auditLogs.Select(log => _mapper.Map<AuditLogDto>(log)).ToList();
+
+        return new PaginatedList<AuditLogDto>(
+            mappedLogs,
+            totalCount,
+            request.PageNumber,
+            request.PageSize
+        );
     }
 }

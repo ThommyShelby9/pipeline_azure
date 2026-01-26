@@ -1,5 +1,4 @@
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using ShoppingProject.Application.Common.Extensions;
@@ -7,7 +6,6 @@ using ShoppingProject.Application.Common.Interfaces;
 using ShoppingProject.Application.Common.Models;
 using ShoppingProject.Application.DTOs;
 using ShoppingProject.Domain.Common;
-using ShoppingProject.Domain.Entities;
 
 namespace ShoppingProject.Application.Products.Queries.SearchProducts;
 
@@ -37,11 +35,12 @@ public class SearchProductsQueryHandler
 
         var totalCount = await products.CountAsync(cancellationToken);
 
-        var paginatedProducts = await products
+        var paginatedProducts = products
             .Skip(request.Index * request.Size)
             .Take(request.Size)
-            .ProjectTo<ProductDto>(_mapper.ConfigurationProvider)
-            .ToListAsync(cancellationToken);
+            .AsEnumerable()
+            .Select(p => _mapper.Map<ProductDto>(p))
+            .ToList();
 
         return new Paginate<ProductDto>
         {

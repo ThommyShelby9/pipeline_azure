@@ -1,4 +1,5 @@
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using MediatR;
 using ShoppingProject.Application.Common.Interfaces;
 using ShoppingProject.Application.DTOs;
 using ShoppingProject.Application.Products.Queries.GetAllProducts;
@@ -8,14 +9,14 @@ namespace ShoppingProject.Application.Products.Queries.GetProducts;
 public class GetAllProductsQueryHandler
     : IRequestHandler<GetAllProductsQuery, IEnumerable<AdminProductDto>>
 {
-    private readonly IApplicationDbContext _context;
+    private readonly IProductRepository _repository;
     private readonly IMapper _mapper;
 
     public GetAllProductsQueryHandler(
-        IApplicationDbContext context,
+        IProductRepository repository,
         IMapper mapper)
     {
-        _context = context;
+        _repository = repository;
         _mapper = mapper;
     }
 
@@ -23,10 +24,7 @@ public class GetAllProductsQueryHandler
         GetAllProductsQuery request,
         CancellationToken cancellationToken)
     {
-
-        return await _context.Products
-            .AsNoTracking()
-            .ProjectTo<AdminProductDto>(_mapper.ConfigurationProvider)
-            .ToListAsync(cancellationToken);
+        var products = await _repository.ListAllAsync(cancellationToken);
+        return products.Select(p => _mapper.Map<AdminProductDto>(p));
     }
 }

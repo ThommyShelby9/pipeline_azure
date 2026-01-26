@@ -1,4 +1,6 @@
-using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using MediatR;
+using ShoppingProject.Application.Carts.Specifications;
 using ShoppingProject.Application.Common.Exceptions;
 using ShoppingProject.Application.Common.Interfaces;
 using ShoppingProject.Application.DTOs;
@@ -7,27 +9,25 @@ namespace ShoppingProject.Application.Carts.Queries.GetCartById;
 
 public class GetCartByIdQueryHandler : IRequestHandler<GetCartByIdQuery, CartDto>
 {
-    private readonly IApplicationDbContext _context;
+    private readonly ICartRepository _repository;
     private readonly IMapper _mapper;
 
-    public GetCartByIdQueryHandler(IApplicationDbContext context, IMapper mapper)
+    public GetCartByIdQueryHandler(ICartRepository repository, IMapper mapper)
     {
-        _context = context;
+        _repository = repository;
         _mapper = mapper;
     }
 
     public async Task<CartDto> Handle(GetCartByIdQuery request, CancellationToken cancellationToken)
     {
-        var entity = await _context
-            .Carts.Where(c => c.Id == request.Id)
-            .ProjectTo<CartDto>(_mapper.ConfigurationProvider)
-            .FirstOrDefaultAsync(cancellationToken);
+        var spec = CartByIdSpecification.Create(request.Id);
+        var entity = await _repository.FirstOrDefaultAsync(spec, cancellationToken);
 
         if (entity == null)
         {
             throw new NotFoundException($"Cart with Id {request.Id} was not found.");
         }
 
-        return entity;
+        return _mapper.Map<CartDto>(entity);
     }
 }

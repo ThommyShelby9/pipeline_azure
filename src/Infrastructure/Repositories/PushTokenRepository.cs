@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using ShoppingProject.Application.Common.Interfaces;
 
-namespace ShoppingProject.Infrastructure.Services;
+namespace ShoppingProject.Infrastructure.Repositories;
 
 public class PushTokenRepository : IPushTokenRepository
 {
