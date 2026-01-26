@@ -15,10 +15,22 @@ using ShoppingProject.WebApi.Middleware;
 var builder = WebApplication.CreateBuilder(args);
 
 var keyVaultName = builder.Configuration["KeyVault:Name"];
-if (!string.IsNullOrWhiteSpace(keyVaultName))
+// Only configure KeyVault if name is provided and valid (not empty, not a placeholder, not just whitespace)
+if (!string.IsNullOrWhiteSpace(keyVaultName) &&
+    !keyVaultName.StartsWith("$(") &&
+    !keyVaultName.Contains("KeyVault") &&
+    keyVaultName.Length > 0)
 {
-    var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
-    builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+    try
+    {
+        var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
+        builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+    }
+    catch (Exception ex)
+    {
+        // Log warning but don't fail startup - KeyVault is optional for local development
+        Console.WriteLine($"Warning: Could not connect to KeyVault '{keyVaultName}': {ex.Message}");
+    }
 }
 
 // Rate limiting services
