@@ -1,4 +1,12 @@
-# Build stage
+# Frontend build stage
+FROM node:22-alpine AS frontend-build
+WORKDIR /app/frontend
+COPY ["src/Presentation/Web/package.json", "src/Presentation/Web/package-lock.json", "./"]
+RUN npm ci
+COPY ["src/Presentation/Web/", "./"]
+RUN npm run build
+
+# Backend build stage
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -13,6 +21,10 @@ RUN dotnet restore "src/Presentation/API/ShoppingProject.WebApi.csproj"
 
 # Copy everything else and build
 COPY . .
+
+# Copy frontend build output to API wwwroot
+COPY --from=frontend-build /app/frontend/dist src/Presentation/API/wwwroot
+
 WORKDIR "/src/src/Presentation/API"
 RUN dotnet build "ShoppingProject.WebApi.csproj" -c Release -o /app/build
 

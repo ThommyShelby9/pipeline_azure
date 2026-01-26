@@ -1,0 +1,1 @@
+import{j as e}from"./index-DVEBoSxW.js";const r=()=>e.jsx("div",{className:"d-flex justify-content-center my-5",children:e.jsx("div",{className:"spinner-border text-warning",role:"status",children:e.jsx("span",{className:"visually-hidden",children:"Yükleniyor..."})})});export{r as L};
