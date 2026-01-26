@@ -7,6 +7,7 @@ using Serilog;
 using ShoppingProject.Application;
 using ShoppingProject.Infrastructure;
 using ShoppingProject.Infrastructure.Constants;
+using ShoppingProject.Infrastructure.Data;
 using ShoppingProject.Infrastructure.Identity;
 using ShoppingProject.WebApi;
 using ShoppingProject.WebApi.Middleware;
@@ -107,10 +108,10 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Seed Identity data
-using (var scope = app.Services.CreateScope())
+// Initialize database with migrations and seed data
+if (app.Environment.IsDevelopment())
 {
-    await DataSeeder.SeedAsync(scope.ServiceProvider, app.Environment.IsDevelopment());
+    await app.InitialiseDatabaseAsync();
 }
 
 // Rate Limiting

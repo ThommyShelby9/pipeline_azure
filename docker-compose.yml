@@ -12,7 +12,7 @@ services:
       - "5001:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8080;https://+:8081
+      - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=ShoppingProjectDb;Username=postgres;Password=postgres
       - ConnectionStrings__AuditConnection=Host=postgres-audit;Database=AuditLogDb;Username=postgres;Password=postgres
       - ConnectionStrings__RedisConnection=redis:6379
@@ -20,6 +20,12 @@ services:
       - Hangfire__ConnectionString=Host=postgres;Database=ShoppingProjectDb;Username=postgres;Password=postgres
       - Observability__ElasticsearchUrl=http://elasticsearch:9200
       - Observability__OtlpEndpoint=http://jaeger:4317
+      - KeyVault__Name=
+      - JwtSettings__Secret=dev-secret-key-for-local-testing
+      - Authentication__ApiKey=dev-api-key
+      - ServiceBusOption__Url=
+      - Email__SmtpUser=
+      - Email__SmtpPass=
     depends_on:
       postgres:
         condition: service_healthy

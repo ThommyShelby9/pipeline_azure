@@ -24,7 +24,25 @@
       "Bash(npm run lint)",
       "Bash(npm run type-check:*)",
       "Bash(npm run test:coverage:*)",
-      "Bash(report\" step with error: \"Cannot find dependency '@vitest/coverage-v8'\".\n\nAlso add coverage/ directory to .gitignore to prevent committing\ncoverage reports.\n\nVerified: npm run test:coverage now generates reports successfully\nwith 35.77% overall coverage.\nEOF\n\\)\")"
+      "Bash(report\" step with error: \"Cannot find dependency '@vitest/coverage-v8'\".\n\nAlso add coverage/ directory to .gitignore to prevent committing\ncoverage reports.\n\nVerified: npm run test:coverage now generates reports successfully\nwith 35.77% overall coverage.\nEOF\n\\)\")",
+      "Bash(powershell -Command \"Get-Content error.md | Select-Object -Last 100\")",
+      "Bash(powershell -Command:*)",
+      "Bash(findstr:*)",
+      "Bash(git reset:*)",
+      "Bash(docker:*)",
+      "Bash(dir:*)",
+      "Bash(dotnet tool:*)",
+      "Bash(timeout:*)",
+      "Bash(ls:*)",
+      "Bash(dotnet ef database update:*)",
+      "Bash(dotnet --list-runtimes:*)",
+      "Bash(dotnet --list-sdks:*)",
+      "Bash(curl:*)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker-compose build:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(docker-compose:*)"
     ]
   }
 }
