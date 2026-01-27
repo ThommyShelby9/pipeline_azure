@@ -138,15 +138,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseSerilogRequestLogging();
-app.UseCors(AppConstants.CorsPolicies.AllowReactApp);
-app.UseAuthentication();
-app.UseAuthorization();
 
-// OutputCache middleware
-app.UseOutputCache();
-app.UseResponseCaching();
-
-app.MapControllers();
+// Map health checks BEFORE authentication so they bypass auth middleware
+// These are public endpoints used by load balancers and monitoring
 app.MapHealthChecks(
     "/health",
     new HealthCheckOptions
@@ -156,6 +150,16 @@ app.MapHealthChecks(
     }
 );
 app.MapHealthChecksUI(options => options.UIPath = "/health-ui");
+
+app.UseCors(AppConstants.CorsPolicies.AllowReactApp);
+app.UseAuthentication();
+app.UseAuthorization();
+
+// OutputCache middleware
+app.UseOutputCache();
+app.UseResponseCaching();
+
+app.MapControllers();
 
 app.UseWebSockets();
 app.UseMiddleware<WebSocketEchoMiddleware>();
