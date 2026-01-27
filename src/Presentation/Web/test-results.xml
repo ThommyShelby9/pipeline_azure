@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="17" failures="0" errors="0" time="7.070558">
+    <testsuite name="src/test/components/Card.test.tsx" timestamp="2026-01-27T09:46:02.772Z" hostname="DESKTOP-GH65CIA" tests="4" failures="0" errors="0" skipped="0" time="1.2979">
+        <testcase classname="src/test/components/Card.test.tsx" name="Card Component &gt; renders product information correctly" time="0.6502315">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/components/Card.test.tsx" name="Card Component &gt; displays product image" time="0.0530129">
+        </testcase>
+        <testcase classname="src/test/components/Card.test.tsx" name="Card Component &gt; shows rating badge" time="0.037032">
+        </testcase>
+        <testcase classname="src/test/components/Card.test.tsx" name="Card Component &gt; has add to cart button" time="0.5524848">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/pages/LoginPage.test.tsx" timestamp="2026-01-27T09:46:02.823Z" hostname="DESKTOP-GH65CIA" tests="3" failures="0" errors="0" skipped="0" time="1.2987556">
+        <testcase classname="src/test/pages/LoginPage.test.tsx" name="LoginPage &gt; renders login form" time="0.7616782">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+        <testcase classname="src/test/pages/LoginPage.test.tsx" name="LoginPage &gt; validates email field" time="0.2355683">
+        </testcase>
+        <testcase classname="src/test/pages/LoginPage.test.tsx" name="LoginPage &gt; submits form with valid credentials and shows loading state" time="0.2965404">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/infrastructure/persistence/ProductAPIRepository.test.ts" timestamp="2026-01-27T09:46:02.827Z" hostname="DESKTOP-GH65CIA" tests="3" failures="0" errors="0" skipped="0" time="0.014249">
+        <testcase classname="src/test/infrastructure/persistence/ProductAPIRepository.test.ts" name="ProductAPIRepository &gt; getAll should fetch products from API" time="0.0066814">
+        </testcase>
+        <testcase classname="src/test/infrastructure/persistence/ProductAPIRepository.test.ts" name="ProductAPIRepository &gt; getById should fetch a single product" time="0.0013138">
+        </testcase>
+        <testcase classname="src/test/infrastructure/persistence/ProductAPIRepository.test.ts" name="ProductAPIRepository &gt; create should post new product" time="0.0024524">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/cart/pages/CartsPage.test.tsx" timestamp="2026-01-27T09:46:02.830Z" hostname="DESKTOP-GH65CIA" tests="1" failures="0" errors="0" skipped="0" time="0.9761141">
+        <testcase classname="src/test/presentation/features/cart/pages/CartsPage.test.tsx" name="CartsPage &gt; renders empty cart state with i18n texts" time="0.9690994">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/product/hooks/useProducts.test.tsx" timestamp="2026-01-27T09:46:02.832Z" hostname="DESKTOP-GH65CIA" tests="2" failures="0" errors="0" skipped="0" time="0.2394234">
+        <testcase classname="src/test/presentation/features/product/hooks/useProducts.test.tsx" name="useProducts Hook &gt; should fetch products successfully" time="0.1491752">
+        </testcase>
+        <testcase classname="src/test/presentation/features/product/hooks/useProducts.test.tsx" name="useProducts Hook &gt; should handle errors" time="0.0846885">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/product/pages/CategoryPage.test.tsx" timestamp="2026-01-27T09:46:02.834Z" hostname="DESKTOP-GH65CIA" tests="1" failures="0" errors="0" skipped="0" time="1.29717">
+        <testcase classname="src/test/presentation/features/product/pages/CategoryPage.test.tsx" name="CategoryPage &gt; renders categories header and cards" time="1.2919291">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/product/pages/HomePage.test.tsx" timestamp="2026-01-27T09:46:02.836Z" hostname="DESKTOP-GH65CIA" tests="1" failures="0" errors="0" skipped="0" time="0.0958964">
+        <testcase classname="src/test/presentation/features/product/pages/HomePage.test.tsx" name="HomePage &gt; renders empty products state with i18n texts" time="0.091518">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/product/pages/ProductDetailPage.test.tsx" timestamp="2026-01-27T09:46:02.838Z" hostname="DESKTOP-GH65CIA" tests="1" failures="0" errors="0" skipped="0" time="1.1328314">
+        <testcase classname="src/test/presentation/features/product/pages/ProductDetailPage.test.tsx" name="ProductDetailPage &gt; shows error UI when product is not found" time="1.1279283">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/test/presentation/features/product/pages/ProductListPage.test.tsx" timestamp="2026-01-27T09:46:02.841Z" hostname="DESKTOP-GH65CIA" tests="1" failures="0" errors="0" skipped="0" time="0.7182181">
+        <testcase classname="src/test/presentation/features/product/pages/ProductListPage.test.tsx" name="ProductListPage &gt; renders header with i18n title" time="0.7061594">
+            <system-err>
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+            </system-err>
+        </testcase>
+    </testsuite>
+</testsuites>
