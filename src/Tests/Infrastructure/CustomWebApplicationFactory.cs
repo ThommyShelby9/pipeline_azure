@@ -86,6 +86,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         });
 
         builder.UseEnvironment("Testing");
+
+        // Skip response caching for tests
+        builder.ConfigureServices(services =>
+        {
+            services.Configure<Microsoft.AspNetCore.ResponseCaching.ResponseCachingOptions>(options =>
+            {
+                options.MaximumBodySize = 0; // Disable body size limit
+            });
+        });
     }
 
     protected override IHost CreateHost(IHostBuilder builder)
@@ -121,6 +130,7 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+        var context = services.GetRequiredService<ApplicationDbContext>();
 
         // Seed Roles
         var roles = new[] { Roles.Administrator, Roles.Client };
@@ -130,6 +140,44 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
             {
                 await roleManager.CreateAsync(new IdentityRole(role));
             }
+        }
+
+        // Seed Products for integration tests
+        if (!await context.Products.AnyAsync())
+        {
+            var products = new[]
+            {
+                Domain.Entities.Product.Create(
+                    "Laptop",
+                    999.99m,
+                    "High-performance laptop",
+                    "Electronics",
+                    "https://example.com/laptop.jpg"
+                ),
+                Domain.Entities.Product.Create(
+                    "Monitor",
+                    299.99m,
+                    "4K Monitor",
+                    "Electronics",
+                    "https://example.com/monitor.jpg"
+                ),
+                Domain.Entities.Product.Create(
+                    "Keyboard",
+                    99.99m,
+                    "Mechanical keyboard",
+                    "Accessories",
+                    "https://example.com/keyboard.jpg"
+                )
+            };
+
+            // Set status to Active for all products
+            foreach (var product in products)
+            {
+                product.UpdateStatus(Domain.Enums.EntityStatus.Active);
+                context.Products.Add(product);
+            }
+
+            await context.SaveChangesAsync();
         }
 
         // Seed Admin User
