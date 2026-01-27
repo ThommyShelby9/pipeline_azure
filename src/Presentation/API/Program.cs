@@ -167,6 +167,8 @@ app.UseMiddleware<WebSocketEchoMiddleware>();
 app.MapHub<ShoppingProject.Infrastructure.Hubs.NotificationHub>("/hubs/notifications");
 
 // Fallback to index.html for SPA routing (React Router)
+// Note: Health checks, API routes, and hubs are already explicitly mapped above
+// and have higher priority than this fallback, so they won't be caught by this
 app.MapFallbackToFile("index.html");
 
 await app.RunAsync();
